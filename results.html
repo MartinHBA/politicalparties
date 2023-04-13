@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .combination {
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .combination-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .party {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .party-color {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 1px solid #ccc;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="combinations"></div>
+    <script>
+        const data = JSON.parse(localStorage.getItem('chartData'));
+        const combinationsDiv = document.getElementById('combinations');
+
+        data.forEach((combination, index) => {
+            const combinationDiv = document.createElement('div');
+            combinationDiv.className = 'combination';
+
+            const totalSeats = combination.values.reduce((a, b) => a + b, 0);
+
+            const combinationTitle = document.createElement('div');
+            combinationTitle.className = 'combination-title';
+            combinationTitle.textContent = `Combination ${index + 1} - Total Seats: ${totalSeats}`;
+            combinationDiv.appendChild(combinationTitle);
+
+            combination.labels.forEach((label, i) => {
+                const partyDiv = document.createElement('div');
+                partyDiv.className = 'party';
+
+                const partyColor = document.createElement('span');
+                partyColor.className = 'party-color';
+                partyColor.style.backgroundColor = combination.colors[i]; // Use the color assigned to the party
+                partyDiv.appendChild(partyColor);
+
+                const partyText = document.createTextNode(`${label}: ${combination.values[i]} seats`);
+                partyDiv.appendChild(partyText);
+
+                combinationDiv.appendChild(partyDiv);
+            });
+
+            combinationsDiv.appendChild(combinationDiv);
+        });
+
+    </script>
+</body>
+
+</html>

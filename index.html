@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Political Parties and Seats</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="center-align">Political Parties and Seats</h1>
+        <form id="party-form">
+            <div class="input-field">
+                <input type="text" id="party1" required>
+                <label for="party1">Party 1</label>
+            </div>
+            <div class="input-field">
+                <input type="number" id="seats1" min="0" required>
+                <label for="seats1">Seats for Party 1</label>
+            </div>
+            <div class="input-field">
+                <input type="text" id="party2" required>
+                <label for="party2">Party 2</label>
+            </div>
+            <div class="input-field">
+                <input type="number" id="seats2" min="0" required>
+                <label for="seats2">Seats for Party 2</label>
+            </div>
+            <div class="input-field">
+                <input type="text" id="party3" required>
+                <label for="party3">Party 3</label>
+            </div>
+            <div class="input-field">
+                <input type="number" id="seats3" min="0" required>
+                <label for="seats3">Seats for Party 3</label>
+            </div>
+            <div id="extra-fields"></div>
+            <button class="btn waves-effect waves-light" type="button" onclick="addPartyField()">Add Another
+                Party</button>
+            <button class="btn waves-effect waves-light right" type="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+        let fieldCounter = 3;
+
+        function submitForm(event) {
+    event.preventDefault();
+    let parties = [];
+    for (let i = 1; i <= fieldCounter; i++) {
+        let party = document.getElementById(`party${i}`).value;
+        let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
+        parties.push({ name: party, seats: seats });
+    }
+
+    fetch('/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `parties=${encodeURIComponent(JSON.stringify(parties))}`,
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            localStorage.setItem('chartData', JSON.stringify(data));
+            window.location.href = '/results';
+        })
+        .catch((error) => console.error(error));
+}
+
+
+        function addPartyField() {
+            fieldCounter++;
+            let extraFields = document.getElementById("extra-fields");
+            let partyDiv = document.createElement("div");
+            partyDiv.className = "input-field";
+            partyDiv.innerHTML = `
+                <input type="text" id="party${fieldCounter}" required>
+                <label for="party${fieldCounter}">Party ${fieldCounter}</label>`;
+            extraFields.appendChild(partyDiv);
+
+            let seatsDiv = document.createElement("div");
+            seatsDiv.className = "input-field";
+            seatsDiv.innerHTML = `
+                <input type="number" id="seats${fieldCounter}" min="0" required>
+                <label for="seats${fieldCounter}">Seats for Party ${fieldCounter}</label>`;
+            extraFields.appendChild(seatsDiv);
+        }
+
+        document.getElementById("party-form").addEventListener("submit", submitForm); 
+
+
+    </script>
+</body>
+
+</html>
