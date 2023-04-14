@@ -15,29 +15,35 @@
     <div class="container">
         <h1 class="center-align">Political Parties and Seats</h1>
         <form id="party-form">
-            <div class="input-field">
-                <input type="text" id="party1" required>
-                <label for="party1">Party 1</label>
+            <div class="row">
+                <div class="input-field col s6">
+                    <input type="text" id="party1" required>
+                    <label for="party1">Party 1</label>
+                </div>
+                <div class="input-field col s6">
+                    <input type="number" id="seats1" min="0" required>
+                    <label for="seats1">Seats for Party 1</label>
+                </div>
             </div>
-            <div class="input-field">
-                <input type="number" id="seats1" min="0" required>
-                <label for="seats1">Seats for Party 1</label>
+            <div class="row">
+                <div class="input-field col s6">
+                    <input type="text" id="party2" required>
+                    <label for="party2">Party 2</label>
+                </div>
+                <div class="input-field col s6">
+                    <input type="number" id="seats2" min="0" required>
+                    <label for="seats2">Seats for Party 2</label>
+                </div>
             </div>
-            <div class="input-field">
-                <input type="text" id="party2" required>
-                <label for="party2">Party 2</label>
-            </div>
-            <div class="input-field">
-                <input type="number" id="seats2" min="0" required>
-                <label for="seats2">Seats for Party 2</label>
-            </div>
-            <div class="input-field">
-                <input type="text" id="party3" required>
-                <label for="party3">Party 3</label>
-            </div>
-            <div class="input-field">
-                <input type="number" id="seats3" min="0" required>
-                <label for="seats3">Seats for Party 3</label>
+            <div class="row">
+                <div class="input-field col s6">
+                    <input type="text" id="party3" required>
+                    <label for="party3">Party 3</label>
+                </div>
+                <div class="input-field col s6">
+                    <input type="number" id="seats3" min="0" required>
+                    <label for="seats3">Seats for Party 3</label>
+                </div>
             </div>
             <div id="extra-fields"></div>
             <button class="btn waves-effect waves-light" type="button" onclick="addPartyField()">Add Another
@@ -49,49 +55,57 @@
         let fieldCounter = 3;
 
         function submitForm(event) {
-    event.preventDefault();
-    let parties = [];
-    for (let i = 1; i <= fieldCounter; i++) {
-        let party = document.getElementById(`party${i}`).value;
-        let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
-        parties.push({ name: party, seats: seats });
-    }
+            event.preventDefault();
+            let parties = [];
+            for (let i = 1; i <= fieldCounter; i++) {
+                let party = document.getElementById(`party${i}`).value;
+                let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
+                parties.push({ name: party, seats: seats });
+            }
 
-    fetch('/submit', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `parties=${encodeURIComponent(JSON.stringify(parties))}`,
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            localStorage.setItem('chartData', JSON.stringify(data));
-            window.location.href = '/results';
-        })
-        .catch((error) => console.error(error));
-}
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `parties=${encodeURIComponent(JSON.stringify(parties))}`,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    localStorage.setItem('chartData', JSON.stringify(data));
+                    window.location.href = '/results';
+                })
+                .catch((error) => console.error(error));
+        }
+
 
 
         function addPartyField() {
             fieldCounter++;
             let extraFields = document.getElementById("extra-fields");
+
+            let rowDiv = document.createElement("div");
+            rowDiv.className = "row";
+
             let partyDiv = document.createElement("div");
-            partyDiv.className = "input-field";
+            partyDiv.className = "input-field col s6";
             partyDiv.innerHTML = `
-                <input type="text" id="party${fieldCounter}" required>
-                <label for="party${fieldCounter}">Party ${fieldCounter}</label>`;
-            extraFields.appendChild(partyDiv);
+        <input type="text" id="party${fieldCounter}" required>
+        <label for="party${fieldCounter}">Party ${fieldCounter}</label>`;
+            rowDiv.appendChild(partyDiv);
 
             let seatsDiv = document.createElement("div");
-            seatsDiv.className = "input-field";
+            seatsDiv.className = "input-field col s6";
             seatsDiv.innerHTML = `
-                <input type="number" id="seats${fieldCounter}" min="0" required>
-                <label for="seats${fieldCounter}">Seats for Party ${fieldCounter}</label>`;
-            extraFields.appendChild(seatsDiv);
+        <input type="number" id="seats${fieldCounter}" min="0" required>
+        <label for="seats${fieldCounter}">Seats for Party ${fieldCounter}</label>`;
+            rowDiv.appendChild(seatsDiv);
+
+            extraFields.appendChild(rowDiv);
         }
 
-        document.getElementById("party-form").addEventListener("submit", submitForm); 
+
+        document.getElementById("party-form").addEventListener("submit", submitForm);
 
 
     </script>
