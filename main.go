@@ -2,17 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 )
 
 type Party struct {
-	Name  string //`json:"name"`
-	Seats int    //`json:"seats"`
-	Color string // Add this field
+	Name  string
+	Seats int
+	Color string
 }
 
 func main() {
@@ -70,11 +68,6 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Assign a color to each party
-	for i := range parties {
-		parties[i].Color = generateRandomColor()
-	}
-
 	combinations := findCombinations(parties, 76)
 
 	var chartData []map[string]interface{}
@@ -85,7 +78,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		for j, party := range combination {
 			labels[j] = party.Name
 			values[j] = party.Seats
-			colors[j] = party.Color // Use the color assigned to the party
+			colors[j] = party.Color
 		}
 		chartData = append(chartData, map[string]interface{}{
 			"labels": labels,
@@ -99,14 +92,9 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(chartData)
 }
 
-func generateRandomColor() string {
-	return fmt.Sprintf("#%06X", rand.Intn(0xFFFFFF))
-}
-
 func findCombinations(parties []Party, target int) [][]Party {
 	var result [][]Party
 	findCombinationsRec(parties, target, 0, []Party{}, &result)
-	fmt.Println(result)
 	return result
 }
 
