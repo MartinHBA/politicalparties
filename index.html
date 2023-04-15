@@ -16,33 +16,42 @@
         <h1 class="center-align">Political Parties and Seats</h1>
         <form id="party-form">
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s4">
                     <input type="text" id="party1" required>
                     <label for="party1">Party 1</label>
                 </div>
-                <div class="input-field col s6">
+                <div class="input-field col s4">
                     <input type="number" id="seats1" min="0" required>
                     <label for="seats1">Seats for Party 1</label>
                 </div>
+                <div class="input-field col s4">
+                    <input type="color" id="color1" value="#1e88e5">
+                </div>
             </div>
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s4">
                     <input type="text" id="party2" required>
                     <label for="party2">Party 2</label>
                 </div>
-                <div class="input-field col s6">
+                <div class="input-field col s4">
                     <input type="number" id="seats2" min="0" required>
                     <label for="seats2">Seats for Party 2</label>
                 </div>
+                <div class="input-field col s4">
+                    <input type="color" id="color2" value="#5e35b1">
+                </div>
             </div>
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s4">
                     <input type="text" id="party3" required>
                     <label for="party3">Party 3</label>
                 </div>
-                <div class="input-field col s6">
+                <div class="input-field col s4">
                     <input type="number" id="seats3" min="0" required>
                     <label for="seats3">Seats for Party 3</label>
+                </div>
+                <div class="input-field col s4">
+                    <input type="color" id="color3" value="#f4511e">
                 </div>
             </div>
             <div id="extra-fields"></div>
@@ -54,13 +63,23 @@
     <script>
         let fieldCounter = 3;
 
+        function getRandomColor() {
+            let letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
         function submitForm(event) {
             event.preventDefault();
             let parties = [];
             for (let i = 1; i <= fieldCounter; i++) {
                 let party = document.getElementById(`party${i}`).value;
                 let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
-                parties.push({ name: party, seats: seats });
+                let color = document.getElementById(`color${i}`).value;
+                parties.push({ name: party, seats: seats, color: color });
             }
 
             fetch('/submit', {
@@ -78,8 +97,6 @@
                 .catch((error) => console.error(error));
         }
 
-
-
         function addPartyField() {
             fieldCounter++;
             let extraFields = document.getElementById("extra-fields");
@@ -88,27 +105,31 @@
             rowDiv.className = "row";
 
             let partyDiv = document.createElement("div");
-            partyDiv.className = "input-field col s6";
+            partyDiv.className = "input-field col s4";
             partyDiv.innerHTML = `
         <input type="text" id="party${fieldCounter}" required>
         <label for="party${fieldCounter}">Party ${fieldCounter}</label>`;
             rowDiv.appendChild(partyDiv);
 
             let seatsDiv = document.createElement("div");
-            seatsDiv.className = "input-field col s6";
+            seatsDiv.className = "input-field col s4";
             seatsDiv.innerHTML = `
         <input type="number" id="seats${fieldCounter}" min="0" required>
         <label for="seats${fieldCounter}">Seats for Party ${fieldCounter}</label>`;
             rowDiv.appendChild(seatsDiv);
 
+            let colorDiv = document.createElement("div");
+            colorDiv.className = "input-field col s4";
+            colorDiv.innerHTML = `
+        <input type="color" id="color${fieldCounter}" value="${getRandomColor()}">`;
+            rowDiv.appendChild(colorDiv);
+
             extraFields.appendChild(rowDiv);
         }
 
-
         document.getElementById("party-form").addEventListener("submit", submitForm);
-
-
     </script>
+
 </body>
 
 </html>
