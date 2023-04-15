@@ -14,6 +14,7 @@
 <body>
     <div class="container">
         <h1 class="center-align">Political Parties and Seats</h1>
+        <button class="btn waves-effect waves-light" type="button" onclick="fetchParties()">Fetch</button>
         <form id="party-form">
             <div class="row">
                 <div class="input-field col s4">
@@ -62,6 +63,35 @@
     </div>
     <script>
         let fieldCounter = 3;
+        async function fetchParties() {
+    try {
+        const response = await fetch("/fetch");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const parties = await response.json();
+
+        parties.forEach((party, index) => {
+            if (index < 3) {
+                document.getElementById(`party${index + 1}`).value = party.Name;
+                document.getElementById(`seats${index + 1}`).value = party.Seats;
+                document.getElementById(`color${index + 1}`).value = party.Color; // Add this line
+                document.querySelector(`label[for="party${index + 1}"]`).classList.add('active');
+                document.querySelector(`label[for="seats${index + 1}"]`).classList.add('active');
+            } else {
+                addPartyField();
+                document.getElementById(`party${index + 1}`).value = party.Name;
+                document.getElementById(`seats${index + 1}`).value = party.Seats;
+                document.getElementById(`color${index + 1}`).value = party.Color; // Add this line
+                document.querySelector(`label[for="party${index + 1}"]`).classList.add('active');
+                document.querySelector(`label[for="seats${index + 1}"]`).classList.add('active');
+            }
+        });
+    } catch (error) {
+        console.error("Fetch error:", error);
+    }
+}
+
 
         function getRandomColor() {
             let letters = '0123456789ABCDEF';
@@ -71,6 +101,15 @@
             }
             return color;
         }
+
+        function populateFormAndSubmit(parties) {
+    const partiesInput = document.getElementById("parties");
+    partiesInput.value = JSON.stringify(parties);
+
+    const form = document.getElementById("main-form");
+    form.submit();
+}
+
 
         function submitForm(event) {
             event.preventDefault();
