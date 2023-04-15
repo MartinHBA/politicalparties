@@ -137,10 +137,7 @@ func scrape() []Party {
 
 	c.OnHTML("div[class='my-l mb-xxl align-center'] a", func(el *colly.HTMLElement) {
 		partyName := el.ChildText("div.h-tiny-bold")
-		log.Printf("Party name found: %s", partyName) // Add this line to print the party name
-
 		seatsStr := el.ChildText("div.bullet")
-
 		colorStyle := el.ChildAttr("div.bullet", "style")
 		color := extractColorFromStyle(colorStyle)
 
