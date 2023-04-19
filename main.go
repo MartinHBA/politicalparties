@@ -28,6 +28,7 @@ func main() {
 
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
 
 func resultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +131,10 @@ func extractColorFromStyle(style string) string {
 	return ""
 }
 
-func scrape() []Party {
+func scrape(source string) []Party {
+
+	myurl := fmt.Sprintf("https://volby.sme.sk/pref/1/politicke-strany/p/%s", source)
+	fmt.Println(myurl)
 	c := colly.NewCollector()
 
 	var parties []Party
@@ -165,7 +169,7 @@ func scrape() []Party {
 		log.Println("Visiting", r.URL.String())
 	})
 
-	err := c.Visit("https://volby.sme.sk/pref/1/politicke-strany")
+	err := c.Visit(myurl)
 	if err != nil {
 		log.Println("Error visiting URL:", err)
 	}
@@ -182,8 +186,8 @@ func scrape() []Party {
 }
 
 func fetchHandler(w http.ResponseWriter, r *http.Request) {
-
-	parties := scrape()
+	source := r.URL.Query().Get("source")
+	parties := scrape(source)
 
 	if len(parties) == 0 {
 		log.Println("No parties found. Please check the HTML structure and CSS selectors.")
