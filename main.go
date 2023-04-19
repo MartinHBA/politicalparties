@@ -134,7 +134,6 @@ func extractColorFromStyle(style string) string {
 func scrape(source string) []Party {
 
 	myurl := fmt.Sprintf("https://volby.sme.sk/pref/1/politicke-strany/p/%s", source)
-	fmt.Println(myurl)
 	c := colly.NewCollector()
 
 	var parties []Party
