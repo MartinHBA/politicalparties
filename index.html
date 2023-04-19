@@ -23,6 +23,13 @@
 <body>
     <div class="container">
         <h1 class="center-align">Political Parties and Seats</h1>
+        <div class="input-field" style="display: inline-block; vertical-align: middle;">
+            <select id="source">
+                <option value="ako">AKO</option>
+                <option value="focus">FOCUS</option>
+            </select>
+            <label>Source</label>
+        </div>
         <button class="btn waves-effect waves-light" type="button" onclick="fetchParties()">Fetch</button>
         <form id="party-form">
             <div class="row">
@@ -71,14 +78,23 @@
         </form>
     </div>
     <script>
+
         let fieldCounter = 3;
         async function fetchParties() {
             try {
-                const response = await fetch("/fetch");
+                const source = document.getElementById('source').value;
+                const response = await fetch(`/fetch?source=${source}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const parties = await response.json();
+
+                // Remove all existing rows
+                const extraFields = document.getElementById("extra-fields");
+                extraFields.innerHTML = '';
+                // Reset fieldCounter
+                fieldCounter = 3;
+
 
                 parties.forEach((party, index) => {
                     if (index < 3) {
@@ -96,6 +112,7 @@
                         document.querySelector(`label[for="seats${index + 1}"]`).classList.add('active');
                     }
                 });
+
             } catch (error) {
                 console.error("Fetch error:", error);
             }
@@ -176,6 +193,11 @@
         }
 
         document.getElementById("party-form").addEventListener("submit", submitForm);
+        document.addEventListener('DOMContentLoaded', function () {
+            var elems = document.querySelectorAll('select');
+            var instances = M.FormSelect.init(elems);
+        });
+
     </script>
 
 </body>
