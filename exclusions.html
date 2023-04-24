@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropdown Lists Example</title>
+  <style>
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pair {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+  </style>
+  <script>
+    const valuesArray = ['apple', 'banana', 'cucumber', 'redberry', 'blackberry'];
+
+    function generateDropdown() {
+      let dropdown = `<select>`;
+      for (const value of valuesArray) {
+        dropdown += `<option value="${value}">${value.charAt(0).toUpperCase() + value.slice(1)}</option>`;
+      }
+      dropdown += `</select>`;
+      return dropdown;
+    }
+
+    function addAnotherPair() {
+      const pairsContainer = document.getElementById('pairsContainer');
+      const newPair = document.createElement('div');
+      newPair.className = 'pair';
+      newPair.innerHTML = generateDropdown() + generateDropdown();
+      pairsContainer.appendChild(newPair);
+    }
+
+    function displaySelectedPairs() {
+      const pairs = document.getElementsByClassName('pair');
+      let result = '';
+
+      for (let i = 0; i < pairs.length; i++) {
+        const dropdowns = pairs[i].getElementsByTagName('select');
+        const selectedValue1 = dropdowns[0].value;
+        const selectedValue2 = dropdowns[1].value;
+        result += 'Selected pair ' + (i + 1) + ': ' + selectedValue1 + ' - ' + selectedValue2 + '<br>';
+      }
+
+      document.getElementById('selectedPairs').innerHTML = result;
+    }
+  </script>
+</head>
+<body>
+  <div id="pairsContainer"></div>
+  <div class="container">
+    <button onclick="addAnotherPair()">Add another</button>
+    <button onclick="displaySelectedPairs()">Submit</button>
+  </div>
+  <div id="selectedPairs"></div>
+</body>
+</html>
