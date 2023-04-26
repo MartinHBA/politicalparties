@@ -39,6 +39,7 @@ func main() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/results", resultsHandler)
 	http.HandleFunc("/submit", submitHandler)
+	http.HandleFunc("/exclusions", exclusionsHandler)
 	http.HandleFunc("/fetch", fetchHandler)
 	log.Println(pairs)
 	log.Println("Starting server on :8080")
@@ -114,6 +115,20 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(chartData)
+}
+
+func exclusionsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving exclusions.html") // Add this log statement
+	tmpl, err := template.ParseFiles("exclusions.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func containsExclusionPairs(combination []Party, exclusionPairs []ExclusionPair) bool {

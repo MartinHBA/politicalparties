@@ -19,7 +19,7 @@
     }
   </style>
   <script>
-    const valuesArray = ['apple', 'banana', 'cucumber', 'redberry', 'blackberry'];
+    const valuesArray = JSON.parse(localStorage.getItem('partyNames')) || [];
 
     function generateDropdown() {
       let dropdown = `<select>`;
