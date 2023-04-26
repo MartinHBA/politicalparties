@@ -19,13 +19,28 @@ type Party struct {
 	Color string
 }
 
+type ExclusionPair struct {
+	FirstParty  string
+	SecondParty string
+}
+
+var pairs = []ExclusionPair{
+	ExclusionPair{FirstParty: "SMER-SD", SecondParty: "DEMOKRATI"},
+	ExclusionPair{FirstParty: "SMER-SD", SecondParty: "SAS"},
+	ExclusionPair{FirstParty: "SMER-SD", SecondParty: "PS"},
+	ExclusionPair{FirstParty: "REPUBLIKA", SecondParty: "DEMOKRATI"},
+	ExclusionPair{FirstParty: "REPUBLIKA", SecondParty: "SAS"},
+	ExclusionPair{FirstParty: "HLAS", SecondParty: "DEMOKRATI"},
+}
+
 // develop branch comment
 func main() {
+
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/results", resultsHandler)
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/fetch", fetchHandler)
-
+	log.Println(pairs)
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
@@ -77,7 +92,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	combinations := findCombinations(parties, 76)
+	combinations := findCombinations(parties, 76, pairs)
 
 	var chartData []map[string]interface{}
 	for _, combination := range combinations {
@@ -101,24 +116,41 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(chartData)
 }
 
-func findCombinations(parties []Party, target int) [][]Party {
+func containsExclusionPairs(combination []Party, exclusionPairs []ExclusionPair) bool {
+	partyNames := make(map[string]bool)
+	for _, party := range combination {
+		partyNames[party.Name] = true
+	}
+
+	for _, pair := range exclusionPairs {
+		if partyNames[pair.FirstParty] && partyNames[pair.SecondParty] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func findCombinations(parties []Party, target int, exclusionPairs []ExclusionPair) [][]Party {
 	var result [][]Party
-	findCombinationsRec(parties, target, 0, []Party{}, &result)
+	findCombinationsRec(parties, target, 0, []Party{}, &result, exclusionPairs)
 	return result
 }
 
-func findCombinationsRec(parties []Party, target, currentSum int, currentCombination []Party, result *[][]Party) {
+func findCombinationsRec(parties []Party, target, currentSum int, currentCombination []Party, result *[][]Party, exclusionPairs []ExclusionPair) {
 	if currentSum >= target {
-		combinationCopy := make([]Party, len(currentCombination))
-		copy(combinationCopy, currentCombination)
-		*result = append(*result, combinationCopy)
+		if !containsExclusionPairs(currentCombination, exclusionPairs) {
+			combinationCopy := make([]Party, len(currentCombination))
+			copy(combinationCopy, currentCombination)
+			*result = append(*result, combinationCopy)
+		}
 		return
 	}
 
 	for i, party := range parties {
 		remaining := append([]Party{}, parties[i+1:]...)
 		newCombination := append(currentCombination, party)
-		findCombinationsRec(remaining, target, currentSum+party.Seats, newCombination, result)
+		findCombinationsRec(remaining, target, currentSum+party.Seats, newCombination, result, exclusionPairs)
 	}
 }
 
