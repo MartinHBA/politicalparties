@@ -19,13 +19,23 @@ type Party struct {
 	Color string
 }
 
+type ExclusionPair struct {
+	FirstParty  string
+	SecondParty string
+}
+
+var pairs = []ExclusionPair{}
+
 // develop branch comment
 func main() {
+
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/results", resultsHandler)
 	http.HandleFunc("/submit", submitHandler)
+	http.HandleFunc("/exclusions", exclusionsHandler)
+	http.HandleFunc("/submit_with_exclusions", submitWithExclusionsHandler)
 	http.HandleFunc("/fetch", fetchHandler)
-
+	log.Println(pairs)
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
@@ -57,27 +67,20 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func submitHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func processRequest(r *http.Request, pairs []ExclusionPair) ([]map[string]interface{}, error) {
 	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
 	partiesJSON := r.FormValue("parties")
 	var parties []Party
 	err = json.Unmarshal([]byte(partiesJSON), &parties)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
-	combinations := findCombinations(parties, 76)
+	combinations := findCombinations(parties, 76, pairs)
 
 	var chartData []map[string]interface{}
 	for _, combination := range combinations {
@@ -96,29 +99,109 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	return chartData, nil
+}
+
+func submitHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var pairs []ExclusionPair
+	chartData, err := processRequest(r, pairs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(chartData)
 }
 
-func findCombinations(parties []Party, target int) [][]Party {
+func submitWithExclusionsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	exclusionJSON := r.FormValue("exclusions")
+	var exclusionPairs []ExclusionPair
+	err = json.Unmarshal([]byte(exclusionJSON), &exclusionPairs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	fmt.Println("Exclusions: ", exclusionPairs)
+
+	chartData, err := processRequest(r, exclusionPairs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(chartData)
+}
+
+func exclusionsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving exclusions.html")
+
+	tmpl, err := template.ParseFiles("exclusions.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+}
+
+func containsExclusionPairs(combination []Party, exclusionPairs []ExclusionPair) bool {
+	partyNames := make(map[string]bool)
+	for _, party := range combination {
+		partyNames[party.Name] = true
+	}
+
+	for _, pair := range exclusionPairs {
+		if partyNames[pair.FirstParty] && partyNames[pair.SecondParty] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func findCombinations(parties []Party, target int, exclusionPairs []ExclusionPair) [][]Party {
 	var result [][]Party
-	findCombinationsRec(parties, target, 0, []Party{}, &result)
+	findCombinationsRec(parties, target, 0, []Party{}, &result, exclusionPairs)
 	return result
 }
 
-func findCombinationsRec(parties []Party, target, currentSum int, currentCombination []Party, result *[][]Party) {
+func findCombinationsRec(parties []Party, target, currentSum int, currentCombination []Party, result *[][]Party, exclusionPairs []ExclusionPair) {
 	if currentSum >= target {
-		combinationCopy := make([]Party, len(currentCombination))
-		copy(combinationCopy, currentCombination)
-		*result = append(*result, combinationCopy)
+		if !containsExclusionPairs(currentCombination, exclusionPairs) {
+			combinationCopy := make([]Party, len(currentCombination))
+			copy(combinationCopy, currentCombination)
+			*result = append(*result, combinationCopy)
+		}
 		return
 	}
 
 	for i, party := range parties {
 		remaining := append([]Party{}, parties[i+1:]...)
 		newCombination := append(currentCombination, party)
-		findCombinationsRec(remaining, target, currentSum+party.Seats, newCombination, result)
+		findCombinationsRec(remaining, target, currentSum+party.Seats, newCombination, result, exclusionPairs)
 	}
 }
 
