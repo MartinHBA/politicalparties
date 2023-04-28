@@ -67,24 +67,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func submitHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func processRequest(r *http.Request, pairs []ExclusionPair) ([]map[string]interface{}, error) {
 	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
 	partiesJSON := r.FormValue("parties")
 	var parties []Party
 	err = json.Unmarshal([]byte(partiesJSON), &parties)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
 	combinations := findCombinations(parties, 76, pairs)
@@ -104,6 +97,22 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 			"values": values,
 			"colors": colors,
 		})
+	}
+
+	return chartData, nil
+}
+
+func submitHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var pairs []ExclusionPair
+	chartData, err := processRequest(r, pairs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -132,38 +141,17 @@ func submitWithExclusionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("Exclusions: ", exclusionPairs)
 
-	partiesJSON := r.FormValue("parties")
-	var parties []Party
-	err = json.Unmarshal([]byte(partiesJSON), &parties)
+	chartData, err := processRequest(r, exclusionPairs)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-	fmt.Println("Parties: ", parties)
-	combinations := findCombinations(parties, 76, exclusionPairs)
-	fmt.Println("found combinations :", combinations)
-	fmt.Println("Number of combinations : ", len(combinations))
-	var chartData []map[string]interface{}
-	for _, combination := range combinations {
-		labels := make([]string, len(combination))
-		values := make([]int, len(combination))
-		colors := make([]string, len(combination))
-		for j, party := range combination {
-			labels[j] = party.Name
-			values[j] = party.Seats
-			colors[j] = party.Color
-		}
-		chartData = append(chartData, map[string]interface{}{
-			"labels": labels,
-			"values": values,
-			"colors": colors,
-		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(chartData)
 }
+
 func exclusionsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Serving exclusions.html")
 
