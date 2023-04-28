@@ -4,28 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dropdown Lists Example</title>
-  <style>
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .pair {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-  </style>
+  <title>Exclusions</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
     const valuesArray = JSON.parse(localStorage.getItem('partyNames')) || [];
     const parties = JSON.parse(localStorage.getItem('partiesData')) || [];
 
     function generateDropdown() {
-      let dropdown = `<select>`;
+      let dropdown = `<select class="browser-default">`;
       for (const value of valuesArray) {
         dropdown += `<option value="${value}">${value.charAt(0).toUpperCase() + value.slice(1)}</option>`;
       }
@@ -36,8 +25,8 @@
     function addAnotherPair() {
       const pairsContainer = document.getElementById('pairsContainer');
       const newPair = document.createElement('div');
-      newPair.className = 'pair';
-      newPair.innerHTML = generateDropdown() + generateDropdown();
+      newPair.className = 'pair row';
+      newPair.innerHTML = `<div class="input-field col s5">${generateDropdown()}</div><div class="input-field col s5">${generateDropdown()}</div>`;
       pairsContainer.appendChild(newPair);
     }
 
@@ -68,15 +57,22 @@
         .catch((error) => console.error(error));
     }
 
-
   </script>
 </head>
 
 <body>
-  <div id="pairsContainer"></div>
   <div class="container">
-    <button onclick="addAnotherPair()">Add another</button>
-    <button onclick="displaySelectedPairs()">Submit</button>
+    <div id="pairsContainer"></div>
+    <div class="row">
+      <div class="col s12">
+        <button class="btn waves-effect waves-light" onclick="addAnotherPair()">Add another
+          <i class="material-icons right">add</i>
+        </button>
+        <button class="btn waves-effect waves-light" onclick="displaySelectedPairs()">Submit
+          <i class="material-icons right">send</i>
+        </button>
+      </div>
+    </div>
   </div>
   <div id="selectedPairs"></div>
 </body>
