@@ -24,14 +24,7 @@ type ExclusionPair struct {
 	SecondParty string
 }
 
-var pairs = []ExclusionPair{
-	ExclusionPair{FirstParty: "SMER-SD", SecondParty: "DEMOKRATI"},
-	ExclusionPair{FirstParty: "SMER-SD", SecondParty: "SAS"},
-	ExclusionPair{FirstParty: "SMER-SD", SecondParty: "PS"},
-	ExclusionPair{FirstParty: "REPUBLIKA", SecondParty: "DEMOKRATI"},
-	ExclusionPair{FirstParty: "REPUBLIKA", SecondParty: "SAS"},
-	ExclusionPair{FirstParty: "HLAS", SecondParty: "DEMOKRATI"},
-}
+var pairs = []ExclusionPair{}
 
 // develop branch comment
 func main() {
@@ -40,6 +33,7 @@ func main() {
 	http.HandleFunc("/results", resultsHandler)
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/exclusions", exclusionsHandler)
+	http.HandleFunc("/submit_with_exclusions", submitWithExclusionsHandler)
 	http.HandleFunc("/fetch", fetchHandler)
 	log.Println(pairs)
 	log.Println("Starting server on :8080")
@@ -117,18 +111,72 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(chartData)
 }
 
+func submitWithExclusionsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	exclusionJSON := r.FormValue("exclusions")
+	var exclusionPairs []ExclusionPair
+	err = json.Unmarshal([]byte(exclusionJSON), &exclusionPairs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	fmt.Println("Exclusions: ", exclusionPairs)
+
+	partiesJSON := r.FormValue("parties")
+	var parties []Party
+	err = json.Unmarshal([]byte(partiesJSON), &parties)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	fmt.Println("Parties: ", parties)
+	combinations := findCombinations(parties, 76, exclusionPairs)
+	fmt.Println("found combinations :", combinations)
+	fmt.Println("Number of combinations : ", len(combinations))
+	var chartData []map[string]interface{}
+	for _, combination := range combinations {
+		labels := make([]string, len(combination))
+		values := make([]int, len(combination))
+		colors := make([]string, len(combination))
+		for j, party := range combination {
+			labels[j] = party.Name
+			values[j] = party.Seats
+			colors[j] = party.Color
+		}
+		chartData = append(chartData, map[string]interface{}{
+			"labels": labels,
+			"values": values,
+			"colors": colors,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(chartData)
+}
 func exclusionsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Serving exclusions.html") // Add this log statement
+	log.Println("Serving exclusions.html")
+
 	tmpl, err := template.ParseFiles("exclusions.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	err = tmpl.Execute(w, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 }
 
 func containsExclusionPairs(combination []Party, exclusionPairs []ExclusionPair) bool {
