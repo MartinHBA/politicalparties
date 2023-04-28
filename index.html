@@ -75,6 +75,8 @@
             <button class="btn waves-effect waves-light" type="button" onclick="addPartyField()">Add Another
                 Party</button>
             <button class="btn waves-effect waves-light right" type="submit">Submit</button>
+            <button class="btn waves-effect waves-light right" type="button"
+                onclick="exclusionsForm(event)">Exclusions</button>
         </form>
     </div>
     <script>
@@ -161,6 +163,28 @@
                 })
                 .catch((error) => console.error(error));
         }
+
+
+        function exclusionsForm(event) {
+            event.preventDefault();
+            let partyNames = [];
+            for (let i = 1; i <= fieldCounter; i++) {
+                let party = document.getElementById(`party${i}`).value;
+                partyNames.push(party);
+            }
+            let partiesData = [];
+            for (let i = 1; i <= fieldCounter; i++) {
+                let party = document.getElementById(`party${i}`).value;
+                let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
+                let color = document.getElementById(`color${i}`).value;
+                partiesData.push({ name: party, seats: seats, color: color });
+            }
+
+            localStorage.setItem('partyNames', JSON.stringify(partyNames));
+            localStorage.setItem('partiesData', JSON.stringify(partiesData));
+            window.location.href = '/exclusions';
+        }
+
 
         function addPartyField() {
             fieldCounter++;
