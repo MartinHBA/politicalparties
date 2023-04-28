@@ -19,7 +19,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </head>
-
 <body>
     <div class="container">
         <h1 class="center-align">Political Parties and Seats</h1>
@@ -72,11 +71,19 @@
                 </div>
             </div>
             <div id="extra-fields"></div>
-            <button class="btn waves-effect waves-light" type="button" onclick="addPartyField()">Add Another
-                Party</button>
-            <button class="btn waves-effect waves-light right" type="submit">Submit</button>
-            <button class="btn waves-effect waves-light right" type="button"
-                onclick="exclusionsForm(event)">Exclusions</button>
+            <div class="row">
+                <div class="input-field col s4">
+                    <button class="btn waves-effect waves-light" type="button" id="add-another-party" onclick="addPartyField()">Add Another
+                        Party</button>
+                </div>
+                <div class="input-field col s4">
+                    <button class="btn waves-effect waves-light" type="submit">Submit</button>
+                    <button class="btn waves-effect waves-light" type="button"
+                        onclick="exclusionsForm(event)">Exclusions</button>
+                </div>
+                <div class="input-field col s4">
+                </div>
+            </div>
         </form>
     </div>
     <script>
@@ -113,6 +120,9 @@
                         document.querySelector(`label[for="party${index + 1}"]`).classList.add('active');
                         document.querySelector(`label[for="seats${index + 1}"]`).classList.add('active');
                     }
+                    // since it's fetched, hide "add another party button"
+                    document.getElementById("add-another-party").style.display = "none";
+
                 });
 
             } catch (error) {
