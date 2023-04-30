@@ -214,12 +214,13 @@ func extractColorFromStyle(style string) string {
 	return ""
 }
 
-func scrape(source string) []Party {
+func scrape(source string) ([]Party, string) {
 
 	myurl := fmt.Sprintf("https://volby.sme.sk/pref/1/politicke-strany/p/%s", source)
 	c := colly.NewCollector()
 
 	var parties []Party
+	var date string
 
 	c.OnHTML("div[class='my-l mb-xxl align-center'] a", func(el *colly.HTMLElement) {
 		partyName := el.ChildText("div.h-tiny-bold")
@@ -243,6 +244,10 @@ func scrape(source string) []Party {
 		}
 	})
 
+	c.OnHTML("div.mt-s.px-m.mb-s.col.col-6.col-4-sm > div.fc-dd.fc-dd-s.is-absolute > div.fc-dd-selected.js-popup-toggle > span.selected-title", func(e *colly.HTMLElement) {
+		date = e.Text
+	})
+
 	c.OnError(func(r *colly.Response, err error) {
 		log.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
 	})
@@ -262,14 +267,15 @@ func scrape(source string) []Party {
 		for _, party := range parties {
 			fmt.Printf("Party: %s, Seats: %d, Color: %s\n", party.Name, party.Seats, party.Color)
 		}
+		fmt.Println("Scraped date:", date)
 	}
 
-	return parties
+	return parties, date
 }
 
 func fetchHandler(w http.ResponseWriter, r *http.Request) {
 	source := r.URL.Query().Get("source")
-	parties := scrape(source)
+	parties, dataSourceDate := scrape(source)
 
 	if len(parties) == 0 {
 		log.Println("No parties found. Please check the HTML structure and CSS selectors.")
@@ -282,8 +288,14 @@ func fetchHandler(w http.ResponseWriter, r *http.Request) {
 	for _, party := range parties {
 		log.Printf("Party: %s, Seats: %d, Color: %s", party.Name, party.Seats, party.Color)
 	}
+	fmt.Println(dataSourceDate)
+
+	result := map[string]interface{}{
+		"parties": parties,
+		"date":    dataSourceDate, // Add this line
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(parties)
+	json.NewEncoder(w).Encode(result)
 }
