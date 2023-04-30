@@ -30,6 +30,7 @@
             <label>Source</label>
         </div>
         <button class="btn waves-effect waves-light" type="button" onclick="fetchParties()">Fetch</button>
+        <span id="fetch-date" style="margin-left: 15px;"></span>
         <form id="party-form">
             <div class="row">
                 <div class="input-field col s4">
@@ -96,7 +97,11 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const parties = await response.json();
+                const result = await response.json();
+                const parties = result.parties;
+                const date = result.date;
+                document.getElementById("fetch-date").innerText = `Source data: ${date}`; // Update this line
+
 
                 // Remove all existing rows
                 const extraFields = document.getElementById("extra-fields");

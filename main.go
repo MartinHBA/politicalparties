@@ -275,7 +275,7 @@ func scrape(source string) ([]Party, string) {
 
 func fetchHandler(w http.ResponseWriter, r *http.Request) {
 	source := r.URL.Query().Get("source")
-	parties, date := scrape(source)
+	parties, dataSourceDate := scrape(source)
 
 	if len(parties) == 0 {
 		log.Println("No parties found. Please check the HTML structure and CSS selectors.")
@@ -288,9 +288,14 @@ func fetchHandler(w http.ResponseWriter, r *http.Request) {
 	for _, party := range parties {
 		log.Printf("Party: %s, Seats: %d, Color: %s", party.Name, party.Seats, party.Color)
 	}
-	fmt.Println(date)
+	fmt.Println(dataSourceDate)
+
+	result := map[string]interface{}{
+		"parties": parties,
+		"date":    dataSourceDate, // Add this line
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(parties)
+	json.NewEncoder(w).Encode(result)
 }
