@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QXR2KE4GRN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-QXR2KE4GRN');
+    </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exclusions</title>
@@ -9,6 +18,22 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-gap: 1rem;
+      align-items: center;
+    }
+
+    .col {
+      grid-column-end: span 5;
+    }
+
+    .col-small {
+      grid-column-end: span 2;
+    }
+  </style>
   <script>
     const valuesArray = JSON.parse(localStorage.getItem('partyNames')) || [];
     const parties = JSON.parse(localStorage.getItem('partiesData')) || [];
@@ -25,11 +50,25 @@
     function addAnotherPair() {
       const pairsContainer = document.getElementById('pairsContainer');
       const newPair = document.createElement('div');
-      newPair.className = 'pair row';
-      newPair.innerHTML = `<div class="input-field col s5">${generateDropdown()}</div><div class="input-field col s5">${generateDropdown()}</div>`;
+      newPair.className = 'pair grid-container';
+      newPair.innerHTML = `
+      <div class="col">
+        <div class="input-field">${generateDropdown()}</div>
+      </div>
+      <div class="col">
+        <div class="input-field">${generateDropdown()}</div>
+      </div>
+      <div class="col-small">
+        <button class="btn btn-small waves-effect waves-light red" onclick="removePair(event)" style="margin: 0 auto;">-</button>
+      </div>
+`;
       pairsContainer.appendChild(newPair);
     }
 
+    function removePair(event) {
+      const pairElement = event.target.parentElement.parentElement;
+      pairElement.parentElement.removeChild(pairElement);
+    }
     function displaySelectedPairs() {
       const pairs = document.getElementsByClassName('pair');
       const exclusionPairs = [];
