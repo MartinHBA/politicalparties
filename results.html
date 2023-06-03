@@ -2,15 +2,15 @@
 <html lang="en">
 
 <head>
-      <!-- Google tag (gtag.js) -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-QXR2KE4GRN"></script>
-      <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag() { dataLayer.push(arguments); }
-          gtag('js', new Date());
-  
-          gtag('config', 'G-QXR2KE4GRN');
-      </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QXR2KE4GRN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-QXR2KE4GRN');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Results</title>
@@ -47,40 +47,76 @@
 </head>
 
 <body>
+    <div id="checkboxes"></div>
     <div id="combinations"></div>
     <script>
         const data = JSON.parse(localStorage.getItem('chartData'));
+        const checkboxesDiv = document.getElementById('checkboxes');
         const combinationsDiv = document.getElementById('combinations');
 
-        data.forEach((combination, index) => {
-            const combinationDiv = document.createElement('div');
-            combinationDiv.className = 'combination';
+        let activeParties = {};
 
-            const totalSeats = combination.values.reduce((a, b) => a + b, 0);
+        data.forEach((combination) => {
+            combination.labels.forEach((label) => {
+                if (!activeParties[label]) {
+                    activeParties[label] = true;
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = label;
+                    checkbox.checked = true;
 
-            const combinationTitle = document.createElement('div');
-            combinationTitle.className = 'combination-title';
-            combinationTitle.textContent = `Combination ${index + 1} - Total Seats: ${totalSeats}`;
-            combinationDiv.appendChild(combinationTitle);
+                    checkbox.addEventListener('change', () => {
+                        activeParties[label] = checkbox.checked;
+                        renderCombinations();
+                    });
 
-            combination.labels.forEach((label, i) => {
-                const partyDiv = document.createElement('div');
-                partyDiv.className = 'party';
+                    const labelForCheckbox = document.createElement('label');
+                    labelForCheckbox.htmlFor = label;
+                    labelForCheckbox.appendChild(document.createTextNode(label));
 
-                const partyColor = document.createElement('span');
-                partyColor.className = 'party-color';
-                partyColor.style.backgroundColor = combination.colors[i]; // Use the color assigned to the party
-                partyDiv.appendChild(partyColor);
-
-                const partyText = document.createTextNode(`${label}: ${combination.values[i]} seats`);
-                partyDiv.appendChild(partyText);
-
-                combinationDiv.appendChild(partyDiv);
+                    checkboxesDiv.appendChild(checkbox);
+                    checkboxesDiv.appendChild(labelForCheckbox);
+                }
             });
-
-            combinationsDiv.appendChild(combinationDiv);
         });
 
+        function renderCombinations() {
+            combinationsDiv.innerHTML = '';
+            data.forEach((combination, index) => {
+                if (combination.labels.some(label => !activeParties[label])) {
+                    return;
+                }
+
+                const combinationDiv = document.createElement('div');
+                combinationDiv.className = 'combination';
+
+                const totalSeats = combination.values.reduce((a, b) => a + b, 0);
+
+                const combinationTitle = document.createElement('div');
+                combinationTitle.className = 'combination-title';
+                combinationTitle.textContent = `Combination ${index + 1} - Total Seats: ${totalSeats}`;
+                combinationDiv.appendChild(combinationTitle);
+
+                combination.labels.forEach((label, i) => {
+                    const partyDiv = document.createElement('div');
+                    partyDiv.className = 'party';
+
+                    const partyColor = document.createElement('span');
+                    partyColor.className = 'party-color';
+                    partyColor.style.backgroundColor = combination.colors[i]; // Use the color assigned to the party
+                    partyDiv.appendChild(partyColor);
+
+                    const partyText = document.createTextNode(`${label}: ${combination.values[i]} seats`);
+                    partyDiv.appendChild(partyText);
+
+                    combinationDiv.appendChild(partyDiv);
+                });
+
+                combinationsDiv.appendChild(combinationDiv);
+            });
+        }
+
+        renderCombinations(); // Initial render
     </script>
 </body>
 
