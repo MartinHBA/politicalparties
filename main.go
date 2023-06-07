@@ -1,16 +1,13 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"regexp"
 	"strconv"
-	"strings"
-
-	"github.com/gocolly/colly/v2"
 )
 
 type Party struct {
@@ -205,97 +202,83 @@ func findCombinationsRec(parties []Party, target, currentSum int, currentCombina
 	}
 }
 
-func extractColorFromStyle(style string) string {
-	re := regexp.MustCompile(`background:\s*([^;]+)`)
-	matches := re.FindStringSubmatch(style)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-	return ""
-}
-
-func scrape(source string) ([]Party, string) {
-
-	myurl := fmt.Sprintf("https://volby.sme.sk/pref/1/politicke-strany/p/%s", source)
-	c := colly.NewCollector()
-
-	var parties []Party
-	var date string
-
-	c.OnHTML("div[class='my-l mb-xxl align-center'] a", func(el *colly.HTMLElement) {
-		partyName := el.ChildText("div.h-tiny-bold")
-		seatsStr := el.ChildText("div.bullet")
-		colorStyle := el.ChildAttr("div.bullet", "style")
-		color := extractColorFromStyle(colorStyle)
-
-		seats, err := strconv.Atoi(strings.TrimSpace(seatsStr))
-		if err != nil {
-			log.Printf("Error converting seats to int: %v\n", err)
-			return
-		}
-
-		if partyName != "" { //&& color != "" {
-			party := Party{
-				Name:  strings.TrimSpace(partyName),
-				Seats: seats,
-				Color: color,
-			}
-			parties = append(parties, party)
-		}
-	})
-
-	c.OnHTML("div.mt-s.px-m.mb-s.col.col-6.col-4-sm > div.fc-dd.fc-dd-s.is-absolute > div.fc-dd-selected.js-popup-toggle > span.selected-title", func(e *colly.HTMLElement) {
-		date = e.Text
-	})
-
-	c.OnError(func(r *colly.Response, err error) {
-		log.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
-	})
-
-	c.OnRequest(func(r *colly.Request) {
-		log.Println("Visiting", r.URL.String())
-	})
-
-	err := c.Visit(myurl)
-	if err != nil {
-		log.Println("Error visiting URL:", err)
-	}
-
-	if len(parties) == 0 {
-		log.Println("No parties found. Please check the HTML structure and CSS selectors.")
-	} else {
-		for _, party := range parties {
-			fmt.Printf("Party: %s, Seats: %d, Color: %s\n", party.Name, party.Seats, party.Color)
-		}
-		fmt.Println("Scraped date:", date)
-	}
-
-	return parties, date
-}
-
 func fetchHandler(w http.ResponseWriter, r *http.Request) {
-	source := r.URL.Query().Get("source")
-	parties, dataSourceDate := scrape(source)
+	source := "https://raw.githubusercontent.com/MartinHBA/politicalparties/main/PollsSeats.csv"
+	agency := r.URL.Query().Get("source")
+
+	parties, date, err := fetchAndFilterParties(source, agency)
+	if err != nil {
+		http.Error(w, "Error fetching data: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err != nil {
+		log.Println("Error fetching data:", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Error fetching data"})
+		return
+	}
 
 	if len(parties) == 0 {
-		log.Println("No parties found. Please check the HTML structure and CSS selectors.")
+		log.Println("No parties found.")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"error": "No parties found. Please check the HTML structure and CSS selectors."})
+		json.NewEncoder(w).Encode(map[string]string{"error": "No parties found."})
 		return
 	}
 
 	for _, party := range parties {
 		log.Printf("Party: %s, Seats: %d, Color: %s", party.Name, party.Seats, party.Color)
 	}
-	fmt.Println(dataSourceDate)
+	fmt.Println(date)
 
 	result := map[string]interface{}{
 		"parties": parties,
-		"date":    dataSourceDate, // Add this line
+		"date":    date,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
+}
+
+func fetchAndFilterParties(url string, agency string) ([]Party, string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, "", err
+	}
+	defer resp.Body.Close()
+
+	reader := csv.NewReader(resp.Body)
+	reader.Comma = ';'
+	reader.LazyQuotes = true
+
+	rows, err := reader.ReadAll()
+	if err != nil {
+		return nil, "", err
+	}
+
+	var parties []Party
+	var date string
+	for _, row := range rows {
+		if row[1] == agency {
+			if date == "" {
+				date = row[0]
+			}
+			seats, err := strconv.Atoi(row[3])
+			if err != nil {
+				return nil, "", err
+			}
+
+			party := Party{
+				Name:  row[2],
+				Seats: seats,
+				Color: row[4],
+			}
+			parties = append(parties, party)
+		}
+	}
+
+	return parties, date, nil
 }
