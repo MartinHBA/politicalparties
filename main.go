@@ -205,7 +205,6 @@ func findCombinationsRec(parties []Party, target, currentSum int, currentCombina
 func fetchHandler(w http.ResponseWriter, r *http.Request) {
 	source := "https://raw.githubusercontent.com/MartinHBA/politicalparties/main/PollsSeats.csv"
 	agency := r.URL.Query().Get("source")
-	log.Println("Agency:", agency)
 
 	parties, date, err := fetchAndFilterParties(source, agency)
 	if err != nil {
