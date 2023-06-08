@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -203,10 +204,10 @@ func findCombinationsRec(parties []Party, target, currentSum int, currentCombina
 }
 
 func fetchHandler(w http.ResponseWriter, r *http.Request) {
-	source := "https://raw.githubusercontent.com/MartinHBA/politicalparties/main/PollsSeats.csv"
+	filename := "PollsSeats.csv"
 	agency := r.URL.Query().Get("source")
 
-	parties, date, err := fetchAndFilterParties(source, agency)
+	parties, date, err := fetchAndFilterParties(filename, agency)
 	if err != nil {
 		http.Error(w, "Error fetching data: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -243,15 +244,15 @@ func fetchHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-func fetchAndFilterParties(url string, agency string) ([]Party, string, error) {
-	resp, err := http.Get(url)
+func fetchAndFilterParties(filename string, agency string) ([]Party, string, error) {
+	file, err := os.Open(filename)
 	if err != nil {
 		return nil, "", err
 	}
-	defer resp.Body.Close()
+	defer file.Close()
 
-	reader := csv.NewReader(resp.Body)
-	reader.Comma = ';'
+	reader := csv.NewReader(file)
+	reader.Comma = ','
 	reader.LazyQuotes = true
 
 	rows, err := reader.ReadAll()
