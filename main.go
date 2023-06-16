@@ -26,6 +26,8 @@ var pairs = []ExclusionPair{}
 
 // develop branch comment
 func main() {
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/results", resultsHandler)
