@@ -4,6 +4,15 @@
 <head>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QXR2KE4GRN"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 66.66%;
+            height: 50%;
+            position: relative;
+        }
+    </style>
+
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
@@ -19,6 +28,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </head>
+
 <body>
     <div class="container">
         <h1 class="center-align">Political Parties and Seats</h1>
@@ -76,7 +86,8 @@
             <div id="extra-fields"></div>
             <div class="row">
                 <div class="input-field col s4">
-                    <button class="btn waves-effect waves-light" type="button" id="add-another-party" onclick="addPartyField()">Add Another
+                    <button class="btn waves-effect waves-light" type="button" id="add-another-party"
+                        onclick="addPartyField()">Add Another
                         Party</button>
                 </div>
                 <div class="input-field col s4">
@@ -88,11 +99,20 @@
                 </div>
             </div>
         </form>
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
     </div>
+
     <script>
 
         let fieldCounter = 3;
+        let myChart = null;
         async function fetchParties() {
+            // Destroy the old chart if it exists
+            if (myChart) {
+                myChart.destroy();
+            }
             try {
                 const source = document.getElementById('source').value;
                 const response = await fetch(`/fetch?source=${source}`);
@@ -131,7 +151,24 @@
                     document.getElementById("add-another-party").style.display = "none";
 
                 });
-
+                // Create pie chart
+                let ctx = document.getElementById('myChart').getContext('2d');
+                let labels = parties.map(party => party.Name);
+                let data = parties.map(party => party.Seats);
+                let colors = parties.map(party => party.Color);
+                myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '# of Seats',
+                            data: data,
+                            backgroundColor: colors,
+                            borderColor: colors,
+                            borderWidth: 1
+                        }]
+                    },
+                });
             } catch (error) {
                 console.error("Fetch error:", error);
             }
