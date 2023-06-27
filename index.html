@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sk">
 
 <head>
     <!-- Google tag (gtag.js) -->
@@ -27,7 +27,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:image" content="https://politicalparties.azurewebsites.net/static/politicalPartiesBanner2.jpg" />
-    <title>Political Parties and Seats</title>
+    <title>Politické strany a Mandáty</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -36,7 +36,8 @@
 
 <body>
     <div class="container">
-        <h1 class="center-align">Political Parties and Seats</h1>
+        <h1 class="center-align">Politické strany a Mandáty</h1>
+        <h6 class="center-align">Výpočet možných kombinácií potrebných na prekročenie 75 mandátov - vládnej väčšiny</h6>
         <div class="input-field" style="display: inline-block; vertical-align: middle;">
             <select id="source">
                 <option value="AKO">AKO</option>
@@ -45,19 +46,22 @@
                 <option value="VOX Politico">VOX Politico</option>
                 <option value="NMS">NMS</option>
             </select>
-            <label>Source</label>
+            <label>Prieskumy</label>
         </div>
-        <button class="btn waves-effect waves-light" type="button" onclick="fetchParties()">Fetch</button>
+        <button class="btn waves-effect waves-light" type="button" onclick="fetchParties()">Načítaj
+            <i class="material-icons sync">sync</i>
+        </button>
         <span id="fetch-date" style="margin-left: 15px;"></span>
+        <div class="Help">Načítaj prieskum, alebo zadaj mandáty ručne:</div>
         <form id="party-form">
             <div class="row">
                 <div class="input-field col s4">
                     <input type="text" id="party1" required>
-                    <label for="party1">Party 1</label>
+                    <label for="party1">Strana 1</label>
                 </div>
                 <div class="input-field col s4">
                     <input type="number" id="seats1" min="0" required>
-                    <label for="seats1">Seats for Party 1</label>
+                    <label for="seats1">Mandáty strany 1</label>
                 </div>
                 <div class="input-field col s4">
                     <input type="color" id="color1" value="#1e88e5">
@@ -66,11 +70,11 @@
             <div class="row">
                 <div class="input-field col s4">
                     <input type="text" id="party2" required>
-                    <label for="party2">Party 2</label>
+                    <label for="party2">Strana 2</label>
                 </div>
                 <div class="input-field col s4">
                     <input type="number" id="seats2" min="0" required>
-                    <label for="seats2">Seats for Party 2</label>
+                    <label for="seats2">Mandáty strany 2</label>
                 </div>
                 <div class="input-field col s4">
                     <input type="color" id="color2" value="#5e35b1">
@@ -79,11 +83,11 @@
             <div class="row">
                 <div class="input-field col s4">
                     <input type="text" id="party3" required>
-                    <label for="party3">Party 3</label>
+                    <label for="party3">Strana 3</label>
                 </div>
                 <div class="input-field col s4">
                     <input type="number" id="seats3" min="0" required>
-                    <label for="seats3">Seats for Party 3</label>
+                    <label for="seats3">Mandáty strany 3</label>
                 </div>
                 <div class="input-field col s4">
                     <input type="color" id="color3" value="#f4511e">
@@ -93,12 +97,14 @@
             <div class="row">
                 <div class="input-field col s4">
                     <button class="btn waves-effect waves-light" type="button" id="add-another-party"
-                        onclick="addPartyField()">Add Another Party</button>
+                        onclick="addPartyField()">Pridaj stranu</button>
                 </div>
                 <div class="input-field col s4">
-                    <button class="btn waves-effect waves-light" type="submit">Submit</button>
+                    <button class="btn waves-effect waves-light" type="submit">Odoslať
+                        <i class="material-icons right">send</i>
+                    </button>
                     <button class="btn waves-effect waves-light" type="button"
-                        onclick="exclusionsForm(event)">Exclusions</button>
+                        onclick="exclusionsForm(event)">Vzájomné Vylúčenia</button>
                 </div>
                 <div class="input-field col s4">
                 </div>
@@ -126,7 +132,7 @@
                     const result = await response.json();
                     const parties = result.parties;
                     const date = result.date;
-                    document.getElementById("fetch-date").innerText = `Source data: ${date}`; // Update this line
+                    document.getElementById("fetch-date").innerText = `Zdroj dát: ${date}`; 
 
 
                     // Remove all existing rows
@@ -270,14 +276,14 @@
                 partyDiv.className = "input-field col s4";
                 partyDiv.innerHTML = `
         <input type="text" id="party${fieldCounter}" required>
-        <label for="party${fieldCounter}">Party ${fieldCounter}</label>`;
+        <label for="party${fieldCounter}">Strana ${fieldCounter}</label>`;
                 rowDiv.appendChild(partyDiv);
 
                 let seatsDiv = document.createElement("div");
                 seatsDiv.className = "input-field col s4";
                 seatsDiv.innerHTML = `
         <input type="number" id="seats${fieldCounter}" min="0" required>
-        <label for="seats${fieldCounter}">Seats for Party ${fieldCounter}</label>`;
+        <label for="seats${fieldCounter}">Mandáty strany ${fieldCounter}</label>`;
                 rowDiv.appendChild(seatsDiv);
 
                 let colorDiv = document.createElement("div");
