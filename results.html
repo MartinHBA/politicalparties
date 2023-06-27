@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sk">
 
 <head>
     <!-- Google tag (gtag.js) -->
@@ -13,7 +13,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Results</title>
+    <title>Výsledky</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,10 +43,18 @@
             border: 1px solid #ccc;
             margin-right: 5px;
         }
+        #HelpMsg, #checkboxes {
+        position: sticky;
+        top: 0;
+        background: white; 
+        z-index: 1; /* Ensures the divs stay on top of other content */
+    }
+
     </style>
 </head>
 
 <body>
+    <div id="HelpMsg">Zobrazuj iba možné kombinácie so stranami:</div>
     <div id="checkboxes"></div>
     <div id="combinations"></div>
     <script>
@@ -94,7 +102,7 @@
 
                 const combinationTitle = document.createElement('div');
                 combinationTitle.className = 'combination-title';
-                combinationTitle.textContent = `Combination ${index + 1} - Total Seats: ${totalSeats}`;
+                combinationTitle.textContent = `Kombinácia ${index + 1} - Mandátov spolu: ${totalSeats}`;
                 combinationDiv.appendChild(combinationTitle);
 
                 combination.labels.forEach((label, i) => {
@@ -106,7 +114,7 @@
                     partyColor.style.backgroundColor = combination.colors[i]; // Use the color assigned to the party
                     partyDiv.appendChild(partyColor);
 
-                    const partyText = document.createTextNode(`${label}: ${combination.values[i]} seats`);
+                    const partyText = document.createTextNode(`${label}: ${combination.values[i]} mandátov`);
                     partyDiv.appendChild(partyText);
 
                     combinationDiv.appendChild(partyDiv);
