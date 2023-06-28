@@ -15,13 +15,13 @@
             height: 100%;
             position: relative;
         }
-    
+
         .btn {
             display: flex;
             align-items: center;
             justify-content: center;
         }
-    
+
         .material-icons {
             vertical-align: middle;
         }
@@ -113,8 +113,8 @@
                     <button class="btn waves-effect waves-light" type="submit">Odoslať
                         <i class="material-icons right">send</i>
                     </button>
-                    <button class="btn waves-effect waves-light" type="button"
-                        onclick="exclusionsForm(event)">Vzájomné Vylúčenia</button>
+                    <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)">Vzájomné
+                        Vylúčenia</button>
                 </div>
                 <div class="input-field col s4">
                 </div>
@@ -135,6 +135,8 @@
                 }
                 try {
                     const source = document.getElementById('source').value;
+                    // put into local storage info which agency was fetched
+                    localStorage.setItem('selectedOption', source);
                     const response = await fetch(`/fetch?source=${source}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -142,7 +144,10 @@
                     const result = await response.json();
                     const parties = result.parties;
                     const date = result.date;
-                    document.getElementById("fetch-date").innerText = `Zdroj dát: ${date}`; 
+                    // put into local storage info what date
+                    localStorage.setItem('agencyDate', date);
+                    document.getElementById("fetch-date").innerText = `Zdroj dát: ${date}`;
+
 
 
                     // Remove all existing rows
@@ -200,9 +205,9 @@
                             startAngle: -100,
                             endAngle: 100
                         }]//,
-                       // legend: {
-                       //     labelFormat: '{name} <span style="opacity: 0.4">{y}</span>'
-                       // }
+                        // legend: {
+                        //     labelFormat: '{name} <span style="opacity: 0.4">{y}</span>'
+                        // }
                     });
                 } catch (error) {
                     console.error("Fetch error:", error);

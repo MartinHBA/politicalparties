@@ -18,6 +18,8 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
+            margin: 0;
+            padding: 0;
         }
 
         .combination {
@@ -43,20 +45,52 @@
             border: 1px solid #ccc;
             margin-right: 5px;
         }
-        #HelpMsg, #checkboxes {
-        position: sticky;
-        top: 0;
-        background: white; 
-        z-index: 1; /* Ensures the divs stay on top of other content */
-    }
 
+        #sticky-container {
+            position: sticky;
+            top: 0;
+            background: #f5f5f5;
+            /* light gray */
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            /* light gray border */
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            /* slight drop-shadow */
+            z-index: 1;
+            /* Ensures the divs stay on top of other content */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #selectedOption {
+            font-weight: bold;
+        }
+
+        #HelpMsg {
+            margin-bottom: 0;
+            /* remove space below the message */
+        }
     </style>
 </head>
 
 <body>
-    <div id="HelpMsg">Zobrazuj iba možné kombinácie so stranami:</div>
-    <div id="checkboxes"></div>
+    <div id="sticky-container">
+        <div id="selectedOption"></div>
+        <script>
+            var selectedOption = localStorage.getItem('selectedOption');
+            var agencyDate = localStorage.getItem('agencyDate');
+            if (selectedOption) {
+                document.getElementById('selectedOption').textContent = selectedOption + ' - ' + agencyDate;
+            }
+        </script>
+        <div>
+            <div id="HelpMsg">Zobrazuj iba možné kombinácie so zvolenými stranami:</div>
+            <div id="checkboxes"></div>
+        </div>
+    </div>
     <div id="combinations"></div>
+
     <script>
         const data = JSON.parse(localStorage.getItem('chartData'));
         const checkboxesDiv = document.getElementById('checkboxes');
