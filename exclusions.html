@@ -109,8 +109,11 @@
         exclusionPairs.push({ FirstParty, SecondParty });
       }
 
-      //save data to cookie
-      document.cookie = "myExclusions=" + JSON.stringify(exclusionPairs) + ";path=/";
+      // save data to cookie
+      var date = new Date();
+      date.setTime(date.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days in the future
+      var expires = ";expires=" + date.toUTCString();
+      document.cookie = "myExclusions=" + JSON.stringify(exclusionPairs) + expires + ";path=/";
 
       fetch('/submit_with_exclusions', {
         method: 'POST',
