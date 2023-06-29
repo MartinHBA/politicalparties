@@ -38,37 +38,66 @@
     const valuesArray = JSON.parse(localStorage.getItem('partyNames')) || [];
     const parties = JSON.parse(localStorage.getItem('partiesData')) || [];
 
-    function generateDropdown() {
-      let dropdown = `<select class="browser-default">`;
-      for (const value of valuesArray) {
-        dropdown += `<option value="${value}">${value.charAt(0).toUpperCase() + value.slice(1)}</option>`;
-      }
-      dropdown += `</select>`;
-      return dropdown;
-    }
+    //load data from cookies
+    document.addEventListener("DOMContentLoaded", function() {
+    loadExclusionPairs();
+});
 
-    function addAnotherPair() {
-      const pairsContainer = document.getElementById('pairsContainer');
-      const newPair = document.createElement('div');
-      newPair.className = 'pair grid-container';
-      newPair.innerHTML = `
-      <div class="col">
-        <div class="input-field">${generateDropdown()}</div>
-      </div>
-      <div class="col">
-        <div class="input-field">${generateDropdown()}</div>
-      </div>
-      <div class="col-small">
-        <button class="btn btn-small waves-effect waves-light red" onclick="removePair(event)" style="margin: 0 auto;">-</button>
-      </div>
-`;
-      pairsContainer.appendChild(newPair);
+
+    function generateDropdown(selectedValue = '') {
+    let dropdown = `<select class="browser-default">`;
+    for (const value of valuesArray) {
+        let selected = value === selectedValue ? 'selected' : '';
+        dropdown += `<option value="${value}" ${selected}>${value.charAt(0).toUpperCase() + value.slice(1)}</option>`;
     }
+    dropdown += `</select>`;
+    return dropdown;
+}
+
+
+    function addAnotherPair(firstParty = '', secondParty = '') {
+    const pairsContainer = document.getElementById('pairsContainer');
+    const newPair = document.createElement('div');
+    newPair.className = 'pair grid-container';
+    newPair.innerHTML = `
+    <div class="col">
+      <div class="input-field">${generateDropdown(firstParty)}</div>
+    </div>
+    <div class="col">
+      <div class="input-field">${generateDropdown(secondParty)}</div>
+    </div>
+    <div class="col-small">
+      <button class="btn btn-small waves-effect waves-light red" onclick="removePair(event)" style="margin: 0 auto;">-</button>
+    </div>
+  `;
+    pairsContainer.appendChild(newPair);
+}
 
     function removePair(event) {
       const pairElement = event.target.parentElement.parentElement;
       pairElement.parentElement.removeChild(pairElement);
     }
+
+    function loadExclusionPairs() {
+    var name = "myExclusions=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            var exclusionPairs = JSON.parse(c.substring(name.length, c.length));
+            // Use exclusionPairs to populate form
+            for (const pair of exclusionPairs) {
+                addAnotherPair(pair.FirstParty, pair.SecondParty);
+            }
+        }
+    }
+}
+
+
     function displaySelectedPairs() {
       const pairs = document.getElementsByClassName('pair');
       const exclusionPairs = [];
@@ -80,6 +109,8 @@
         exclusionPairs.push({ FirstParty, SecondParty });
       }
 
+      //save data to cookie
+      document.cookie = "myExclusions=" + JSON.stringify(exclusionPairs) + ";path=/";
 
       fetch('/submit_with_exclusions', {
         method: 'POST',
