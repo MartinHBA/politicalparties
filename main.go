@@ -30,6 +30,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/percent", percentHandler)
 	http.HandleFunc("/results", resultsHandler)
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/exclusions", exclusionsHandler)
@@ -56,6 +57,19 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func percentHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("percent.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
