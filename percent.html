@@ -11,6 +11,22 @@
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
+        body {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content-wrapper {
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+            /* This ensures padding is included in the width */
+        }
+
+        #combinations-wrapper {
+            border-left: 1px solid #ddd;
+        }
+
         .slider-wrapper {
             margin-bottom: 20px;
         }
@@ -32,17 +48,22 @@
 </head>
 
 <body>
-    <button id="loadCSV">Načítaj dáta</button>
-    <div id="sliders">
-        <div class="slider-wrapper">
-           
-        </div>
-        <!-- More sliders will be inserted here -->
-    </div>
-    <button id="addSlider">Add Slider</button>
-    <div>Total: <span id="total">0</span>%</div>
-    <div id="chart"></div>
+    <div class="content-wrapper">
+        <button id="loadCSV">Načítaj dáta</button>
+        <div id="sliders">
+            <div class="slider-wrapper">
 
+            </div>
+            <!-- More sliders will be inserted here -->
+        </div>
+        <button id="addSlider">Add Slider</button>
+        <div>Total: <span id="total">0</span>%</div>
+        <div id="chart"></div>
+    </div>
+    <div class="content-wrapper" id="combinations-wrapper">
+        <h2>Possible Majorities</h2>
+        <ul id="combinations-list"></ul>
+    </div>
     <script>
         var chart = Highcharts.chart('chart', {
             chart: {
@@ -80,6 +101,8 @@
             $(document).on('change', '.slider-input', adjustInputs);
             $(document).on('click', '.decrease', decreaseValue);
             $(document).on('click', '.increase', increaseValue);
+            $(document).on('change', '.party-filter', findCombinations);
+            console.log("Checkbox changed:", $(this).attr('id'), $(this).prop('checked'));
             $('#loadCSV').on('click', loadCSV);
         });
 
@@ -118,6 +141,8 @@
             console.log("Updated chart data");
             updateTotal();
             console.log("Updated total");
+            addPartyCheckboxes(chartData.map(data => ({ name: data.name })));
+            findCombinations();
         }
 
 
@@ -289,6 +314,8 @@
             for (var i = 0; i < votes.length; i++) {
                 $('#' + votes[i].id.replace('input', 'mandates')).text(votes[i].mandates + ' mandátov');
             }
+            findCombinations();
+
         }
 
 
@@ -327,6 +354,79 @@
             }
         }
 
+        function getCombinations(parties, target, start = 0, current = [], results = []) {
+            var currentMandates = current.reduce((acc, party) => acc + party.mandates, 0);
+
+            if (currentMandates > target) {
+                results.push([...current]);
+            }
+
+            if (start === parties.length || currentMandates > target) {
+                return results;
+            }
+
+            for (let i = start; i < parties.length; i++) {
+                current.push(parties[i]);
+                getCombinations(parties, target, i + 1, current, results);
+                current.pop();
+            }
+
+            return results;
+        }
+
+        function findCombinations() {
+            console.log("Finding combinations..."); // Debugging statement
+            var parties = [];
+            $('.slider-input').each(function () {
+                var mandates = Number($(this).nextAll('.mandates').first().text().split(' ')[0]);
+                console.log(mandates)
+                var partyName = $(this).prevAll('.party-name').first().val();
+                console.log(partyName)
+                if (mandates > 0 && $('#filter-' + sanitizePartyName(partyName)).prop('checked')) {
+                    parties.push({ name: partyName, mandates: mandates });
+                }
+            });
+            console.log("Filtered parties:", parties);
+
+            var majorities = getCombinations(parties, 76); // Adjusted to find combinations above 75
+            console.log("Majorities found:", majorities);
+            displayCombinations(majorities);
+        }
+
+
+
+        function displayCombinations(combinations) {
+            console.log("displayCombinations triggered with:", combinations);
+            $('#combinations-list').empty();
+            combinations.forEach(combination => {
+                let totalSeats = 0;
+                let formattedCombination = combination.map(party => {
+                    totalSeats += party.mandates;
+                    return `${party.name} (${party.mandates})`;
+                }).join(', ');
+                $('#combinations-list').append('<li><b>' + totalSeats + '</b>: ' + formattedCombination + '</li>');
+            });
+        }
+
+
+        function addPartyCheckboxes(parties) {
+            $('#combinations-wrapper').prepend('<div id="party-filters"></div>');
+            parties.forEach((party, index) => {
+                let sanitizedPartyName = sanitizePartyName(party.name);
+                $('#party-filters').append('<input type="checkbox" class="party-filter" checked id="filter-' + sanitizedPartyName + '"><label for="filter-' + sanitizedPartyName + '">' + party.name + '</label>');
+
+                // If it's not the last party, append a semicolon delimiter
+                if (index !== parties.length - 1) {
+                    $('#party-filters').append('; ');
+                }
+            });
+        }
+
+
+
+        function sanitizePartyName(partyName) {
+            return partyName.replace(/\W+/g, "_");
+        }
 
 
     </script>
