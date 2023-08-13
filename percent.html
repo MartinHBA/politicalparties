@@ -44,12 +44,28 @@
         .mandates {
             font-weight: bold;
         }
+        .spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
     </style>
 </head>
 
 <body>
     <div class="content-wrapper">
         <button id="loadCSV">Načítaj dáta</button>
+        <div id="spinner" class="spinner" style="display: none;"></div>
+        
         <div id="sliders">
             <div class="slider-wrapper">
 
@@ -61,7 +77,7 @@
         <div id="chart"></div>
     </div>
     <div class="content-wrapper" id="combinations-wrapper">
-        <h2>Possible Majorities</h2>
+        <h2>Možné väčšiny</h2>
         <ul id="combinations-list"></ul>
     </div>
     <script>
@@ -70,7 +86,7 @@
                 type: 'item'
             },
             title: {
-                text: 'Seats in Parliament'
+                text: 'Rozloženie mandátov'
             },
             xAxis: {
                 type: 'category'
@@ -102,47 +118,52 @@
             $(document).on('click', '.decrease', decreaseValue);
             $(document).on('click', '.increase', increaseValue);
             $(document).on('change', '.party-filter', findCombinations);
-            console.log("Checkbox changed:", $(this).attr('id'), $(this).prop('checked'));
+            //console.log("Checkbox changed:", $(this).attr('id'), $(this).prop('checked'));
             $('#loadCSV').on('click', loadCSV);
         });
 
         async function loadCSV() {
-            console.log("Starting loadCSV function");
+            $('#spinner').show();
+            //console.log("Starting loadCSV function");
             const response = await fetch('/static/PollsPercentages.csv');
-            console.log("Fetched CSV file");
+            //console.log("Fetched CSV file");
             const data = await response.text();
-            console.log("Converted response to text");
+            //console.log("Converted response to text");
             const results = Papa.parse(data, { header: true }).data;
-            console.log("Parsed CSV data");
-            console.log(results);
+            //console.log("Parsed CSV data");
+            //console.log(results);
             var chartData = [];
             results.forEach((row, index) => {
-                console.log("Processing row " + index);
-                console.log("row data" + JSON.stringify(row));
+                //console.log("Processing row " + index);
+                //console.log("row data" + JSON.stringify(row));
                 var newSliderCount = addSliderWithoutCount();
-                console.log("Added slider " + sliderCount);
+                //console.log("Added slider " + sliderCount);
                 $('#party' + sliderCount).val(row.name);
-                console.log("Set party name for slider " + sliderCount + ": " + row.name);
+                //console.log("Set party name for slider " + sliderCount + ": " + row.name);
                 $('#input' + sliderCount).val(row.percentages);
-                console.log("Set input value for slider " + sliderCount + ": " + row.percentages);
+                //console.log("Set input value for slider " + sliderCount + ": " + row.percentages);
                 $('#slider' + sliderCount).val(row.percentages * 10);
-                console.log("Set slider value for slider " + sliderCount + ": " + row.percentages * 10);
+                $('#slider' + sliderCount).data('color', row.color); // <-- this line to store the color data
+                //console.log("Set slider value for slider " + sliderCount + ": " + row.percentages * 10);
                 $('#qualify' + sliderCount).prop('checked', row['7percentRequired'] === 'True');
-                console.log("Set qualify checkbox for slider " + sliderCount + ": " + (row['7percentRequired'] === 'True'));
+                //console.log("Set qualify checkbox for slider " + sliderCount + ": " + (row['7percentRequired'] === 'True'));
                 chartData.push({
                     name: row.name,
                     y: 0, // initially, the number of mandates is 0
                     color: row.color
                 });
-                console.log("Processed row " + index);
+                //console.log("Processed row " + index);
+                //console.log("Party: " + row.name + ", Color: " + row.color);
             });
-            console.log("Finished processing rows");
+            //console.log("Finished processing rows");
             chart.series[0].setData(chartData);
-            console.log("Updated chart data");
+            //console.log("Updated chart data");
             updateTotal();
-            console.log("Updated total");
+            //console.log("Updated total");
             addPartyCheckboxes(chartData.map(data => ({ name: data.name })));
             findCombinations();
+              // Hide the spinner
+            $('#spinner').hide();
         }
 
 
@@ -155,7 +176,7 @@
                 + '<button class="decrease">-</button>'
                 + '<button class="increase">+</button>'
                 + '<input type="range" min="0" max="1000" value="0" class="slider" id="slider' + sliderCount + '">'
-                + '<input type="checkbox" class="qualify-checkbox" id="qualify' + sliderCount + '"> 7% to qualify'
+                + '<input type="checkbox" class="qualify-checkbox" id="qualify' + sliderCount + '"> 7% kvórum'
                 + '<div class="mandates" id="mandates' + sliderCount + '">0 mandátov</div>'
                 + '</div>';
 
@@ -173,7 +194,7 @@
                 + '<button class="decrease">-</button>'
                 + '<button class="increase">+</button>'
                 + '<input type="range" min="0" max="1000" value="0" class="slider" id="slider' + sliderCount + '">'
-                + '<input type="checkbox" class="qualify-checkbox" id="qualify' + sliderCount + '"> 7% to qualify'
+                + '<input type="checkbox" class="qualify-checkbox" id="qualify' + sliderCount + '"> 7% kvórum'
                 + '<div class="mandates" id="mandates' + sliderCount + '">0 mandátov</div>'
                 + '</div>';
 
@@ -262,14 +283,19 @@
             $('.slider-input').each(function () {
                 var votePercentage = Number($(this).val());
                 var qualifyPercentage = $('#' + $(this).attr('id').replace('input', 'qualify')).is(':checked') ? 7 : 5;
-                if (votePercentage >= qualifyPercentage) { // only parties with qualifyPercentage% and more will qualify for mandates
-                    votes.push({ id: $(this).attr('id'), votes: votePercentage, mandates: 0 });
+                if (votePercentage >= qualifyPercentage) {
+                    votes.push({
+                        id: $(this).attr('id'),
+                        votes: votePercentage,
+                        mandates: 0,
+                        color: $('#' + $(this).attr('id').replace('input', 'slider')).data('color') // Retrieve the color data here
+                    });
                     totalVotes += votePercentage;
                 } else {
-                    // If a party has less than qualifyPercentage% of the votes, reset its mandates to 0
                     $('#' + $(this).attr('id').replace('input', 'mandates')).text('0 mandátov');
                 }
             });
+
 
             var electoralQuotient = totalVotes / (totalSeats + 1);
             var remainingSeats = totalSeats;
@@ -303,7 +329,8 @@
                     var partyName = $('#' + votes[i].id.replace('input', 'party')).val();
                     chartData.push({
                         name: partyName || 'Unnamed party',
-                        y: votes[i].mandates
+                        y: votes[i].mandates,
+                        color: votes[i].color // Use the color data here
                     });
                 }
                 chart.series[0].setData(chartData);
@@ -375,38 +402,39 @@
         }
 
         function findCombinations() {
-            console.log("Finding combinations..."); // Debugging statement
+            //console.log("Finding combinations..."); // Debugging statement
             var parties = [];
             $('.slider-input').each(function () {
                 var mandates = Number($(this).nextAll('.mandates').first().text().split(' ')[0]);
-                console.log(mandates)
                 var partyName = $(this).prevAll('.party-name').first().val();
-                console.log(partyName)
+                var partyColor = $('#' + $(this).attr('id').replace('input', 'slider')).data('color'); // Retrieve the color data here
                 if (mandates > 0 && $('#filter-' + sanitizePartyName(partyName)).prop('checked')) {
-                    parties.push({ name: partyName, mandates: mandates });
+                    parties.push({ name: partyName, mandates: mandates, color: partyColor }); // Add the color property here
                 }
             });
-            console.log("Filtered parties:", parties);
+
+            //console.log("Filtered parties:", parties);
 
             var majorities = getCombinations(parties, 76); // Adjusted to find combinations above 75
-            console.log("Majorities found:", majorities);
+            //console.log("Majorities found:", majorities);
             displayCombinations(majorities);
         }
 
 
 
         function displayCombinations(combinations) {
-            console.log("displayCombinations triggered with:", combinations);
             $('#combinations-list').empty();
             combinations.forEach(combination => {
                 let totalSeats = 0;
                 let formattedCombination = combination.map(party => {
+                    //console.log(party.name, party.color);
                     totalSeats += party.mandates;
-                    return `${party.name} (${party.mandates})`;
+                    return `<span style="display: inline-block; width: 10px; height: 10px; background-color: ${party.color}; margin-right: 5px;"></span>${party.name} (${party.mandates})`; // prepend a colored square before the party name
                 }).join(', ');
                 $('#combinations-list').append('<li><b>' + totalSeats + '</b>: ' + formattedCombination + '</li>');
             });
         }
+
 
 
         function addPartyCheckboxes(parties) {
