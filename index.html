@@ -48,6 +48,10 @@
     <div class="container">
         <h1 class="center-align">Politické strany a Mandáty</h1>
         <h6 class="center-align">Výpočet možných kombinácií potrebných na prekročenie 75 mandátov - vládnej väčšiny</h6>
+        <div class="chart-container">
+            <div id="myChart"></canvas>
+            </div>
+        </div>
         <div class="row">
             <div class="input-field col s5">
                 <select id="source" onchange="fetchParties()">
@@ -57,9 +61,15 @@
                 </select>
                 <label>Prieskumy</label>
             </div>
-            <div class="input-field col s5">
+            <div class="input-field col s3">
+                <button class="btn waves-effect waves-light" type="submit" form="party-form" style="width: 100%;">Odoslať
+                    <i class="material-icons right">send</i>
+                </button>
             </div>
-            <div class="input-field col s2"></div>
+            <div class="input-field col s3">
+                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
+                    style="width: 100%;">Vzájomné Vylúčenia</button>
+            </div>
         </div>
         <!--<div class="Help">Načítaj prieskum, alebo zadaj mandáty ručne:</div>-->
         <form id="party-form">
@@ -108,21 +118,11 @@
                     <button class="btn waves-effect waves-light" type="button" id="add-another-party"
                         onclick="addPartyField()" style="width: 80%;">Pridaj stranu</button>
                 </div>
-                <div class="input-field col s5">
-                    <button class="btn waves-effect waves-light" type="submit" style="width: 80%;">Odoslať
-                        <i class="material-icons right">send</i>
-                    </button>
-                    <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
-                        style="width: 80%;margin-top: 10px;">Vzájomné Vylúčenia</button>
-                </div>
                 <div class="input-field col s2">
                 </div>
             </div>
         </form>
-        <div class="chart-container">
-            <div id="myChart"></canvas>
-            </div>
-        </div>
+      
         <script>
 
             let fieldCounter = 3;
@@ -196,7 +196,7 @@
                                     name: party.Name,
                                     y: party.Seats,
                                     color: party.Color,
-                                    label: party.Name
+                                    label: `${party.Name} (${party.Seats})`
                                 };
                             }),
                             dataLabels: {
