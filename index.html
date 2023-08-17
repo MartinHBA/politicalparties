@@ -48,28 +48,30 @@
     <div class="container">
         <h1 class="center-align">Politické strany a Mandáty</h1>
         <h6 class="center-align">Výpočet možných kombinácií potrebných na prekročenie 75 mandátov - vládnej väčšiny</h6>
+        <div class="chart-container">
+            <div id="myChart"></canvas>
+            </div>
+        </div>
         <div class="row">
             <div class="input-field col s5">
-                <select id="source">
-                    <option value="AKO">AKO</option>
-                    <option value="Focus">FOCUS</option>
-                    <option value="IPSOS">IPSOS</option>
-                    <option value="VOX Politico">VOX Politico</option>
-                    <option value="NMS">NMS</option>
+                <select id="source" onchange="fetchParties()">
+                    {{range .}}
+                    <option value="{{.}}">{{.}}</option>
+                    {{end}}
                 </select>
                 <label>Prieskumy</label>
             </div>
-            <div class="input-field col s5">
-                <button class="btn waves-effect waves-light" type="button" onclick="fetchParties()" style="width: 80%;">Načítaj
-                    <i class="material-icons sync">sync</i>
+            <div class="input-field col s3">
+                <button class="btn waves-effect waves-light" type="submit" form="party-form" style="width: 100%;">Odoslať
+                    <i class="material-icons right">send</i>
                 </button>
-                <div id="fetch-date"></div>
             </div>
-            <div class="input-field col s2"></div>
+            <div class="input-field col s3">
+                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
+                    style="width: 100%;">Vzájomné Vylúčenia</button>
+            </div>
         </div>
-        
-        
-        <div class="Help">Načítaj prieskum, alebo zadaj mandáty ručne:</div>
+        <!--<div class="Help">Načítaj prieskum, alebo zadaj mandáty ručne:</div>-->
         <form id="party-form">
             <div class="row">
                 <div class="input-field col s5">
@@ -116,21 +118,11 @@
                     <button class="btn waves-effect waves-light" type="button" id="add-another-party"
                         onclick="addPartyField()" style="width: 80%;">Pridaj stranu</button>
                 </div>
-                <div class="input-field col s5">
-                    <button class="btn waves-effect waves-light" type="submit" style="width: 80%;">Odoslať
-                        <i class="material-icons right">send</i>
-                    </button>
-                    <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
-                        style="width: 80%;margin-top: 10px;">Vzájomné Vylúčenia</button>
-                </div>
                 <div class="input-field col s2">
                 </div>
             </div>
         </form>
-        <div class="chart-container">
-            <div id="myChart"></canvas>
-            </div>
-        </div>
+      
         <script>
 
             let fieldCounter = 3;
@@ -141,10 +133,13 @@
                     myChart.destroy();
                 }
                 try {
-                    const source = document.getElementById('source').value;
+                    const selectedValue = document.getElementById('source').value;
+                    const agency = selectedValue.split(" - ")[0]; // Extract only the agency name
+
                     // put into local storage info which agency was fetched
-                    localStorage.setItem('selectedOption', source);
-                    const response = await fetch(`/fetch?source=${source}`);
+                    localStorage.setItem('selectedOption', agency);
+
+                    const response = await fetch(`/fetch?source=${agency}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -153,8 +148,7 @@
                     const date = result.date;
                     // put into local storage info what date
                     localStorage.setItem('agencyDate', date);
-                    document.getElementById("fetch-date").innerText = `Zdroj dát: ${date}`;
-
+                    //document.getElementById("fetch-date").innerText = `Zdroj dát: ${date}`;
 
 
                     // Remove all existing rows
@@ -183,12 +177,16 @@
                         document.getElementById("add-another-party").style.display = "none";
 
                     });
+                    // console.log(source)
+                    // const agencyName = source.split(" - ")[0]; // Extract only the agency name
+                    // console.log(agencyName)
+
                     myChart = Highcharts.chart('myChart', {
                         chart: {
                             type: 'item'
                         },
                         title: {
-                            text: `${source} - ${date}`
+                            text: `${agency} - ${date}`
                         },
                         series: [{
                             name: 'Seats',
@@ -198,7 +196,7 @@
                                     name: party.Name,
                                     y: party.Seats,
                                     color: party.Color,
-                                    label: party.Name
+                                    label: `${party.Name} (${party.Seats})`
                                 };
                             }),
                             dataLabels: {
@@ -321,6 +319,10 @@
             document.addEventListener('DOMContentLoaded', function () {
                 var elems = document.querySelectorAll('select');
                 var instances = M.FormSelect.init(elems);
+                // Automatically select the newest poll and fetch data for it
+                const dropdown = document.getElementById("source");
+                dropdown.selectedIndex = 0; // select the first option
+                fetchParties();
             });
 
         </script>

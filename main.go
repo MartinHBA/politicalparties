@@ -8,7 +8,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
+	"time"
 )
 
 type Party struct {
@@ -56,16 +58,86 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	agencies, err := fetchAllAgencies("PollsSeats.csv")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	tmpl, err := template.ParseFiles("index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = tmpl.Execute(w, nil)
+	err = tmpl.Execute(w, agencies)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func fetchAllAgencies(filename string) ([]string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	reader.Comma = ','
+	reader.LazyQuotes = true
+
+	rows, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	type AgencyDate struct {
+		Name string
+		Date time.Time
+	}
+
+	agencyMap := make(map[string]time.Time)
+	// Start the loop from index 1 to skip the first row
+	for i, row := range rows {
+		if i == 0 {
+			continue // Skip the first row
+		}
+		date, err := time.Parse("02.01.2006", row[0])
+		if err != nil {
+			return nil, err
+		}
+		agencyWithDate := row[1] + " - " + row[0]
+		agencyMap[agencyWithDate] = date
+	}
+
+	// Convert the map to a slice
+	var agencies []AgencyDate
+	for name, date := range agencyMap {
+		agencies = append(agencies, AgencyDate{Name: name, Date: date})
+	}
+
+	// Sort the agencies by date in descending order
+	sort.Slice(agencies, func(i, j int) bool {
+		return agencies[i].Date.After(agencies[j].Date)
+	})
+
+	// Extract the agency names
+	var sortedAgencies []string
+	for _, agency := range agencies {
+		sortedAgencies = append(sortedAgencies, agency.Name)
+	}
+
+	return sortedAgencies, nil
+}
+
+func contains(slice []string, item string) bool {
+	for _, a := range slice {
+		if a == item {
+			return true
+		}
+	}
+	return false
 }
 
 func percentHandler(w http.ResponseWriter, r *http.Request) {
