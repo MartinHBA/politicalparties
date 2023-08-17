@@ -113,11 +113,12 @@
 
         $(document).ready(function () {
             $('#addSlider').on('click', addSlider);
-            $(document).on('input', '.slider', adjustSliders);
+            $(document).on('input', '.slider', debounce(adjustSliders, 100));
             $(document).on('change', '.slider-input', adjustInputs);
-            $(document).on('click', '.decrease', decreaseValue);
-            $(document).on('click', '.increase', increaseValue);
+            $(document).on('click', '.decrease', debounce(decreaseValue, 30));
+            $(document).on('click', '.increase', debounce(increaseValue, 30));
             $(document).on('change', '.party-filter', findCombinations);
+
             //console.log("Checkbox changed:", $(this).attr('id'), $(this).prop('checked'));
             $('#loadCSV').on('click', loadCSV);
         });
@@ -420,6 +421,13 @@
             displayCombinations(majorities);
         }
 
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
 
 
         function displayCombinations(combinations) {
