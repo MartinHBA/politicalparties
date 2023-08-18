@@ -62,7 +62,8 @@
                 <label>Prieskumy</label>
             </div>
             <div class="input-field col s6">
-                <button class="btn waves-effect waves-light" type="submit" form="party-form" style="width: 100%;">Odoslať
+                <button class="btn waves-effect waves-light" type="submit" form="party-form"
+                    style="width: 100%;">Odoslať
                     <i class="material-icons right">send</i>
                 </button>
             </div>
@@ -75,12 +76,13 @@
                 <i class="material-icons">arrow_forward</i>
             </div>
             <div class="col s6">
-                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)" style="width: 100%;">Vzájomné Vylúčenia</button>
+                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
+                    style="width: 100%;">Vzájomné Vylúčenia</button>
             </div>
         </div>
-        
-        
-        
+
+
+
         <form id="party-form">
             <div class="row">
                 <div class="input-field col s6">
@@ -131,16 +133,12 @@
                 </div>
             </div>
         </form>
-      
+
         <script>
 
             let fieldCounter = 3;
             let myChart = null;
             async function fetchParties() {
-                // Destroy the old chart if it exists
-                if (myChart) {
-                    myChart.destroy();
-                }
                 try {
                     const selectedValue = document.getElementById('source').value;
                     const agency = selectedValue.split(" - ")[0]; // Extract only the agency name
@@ -155,13 +153,19 @@
                     const result = await response.json();
                     const parties = result.parties;
                     const date = result.date;
-                    // put into local storage info what date
                     localStorage.setItem('agencyDate', date);
-                    //document.getElementById("fetch-date").innerText = `Zdroj dát: ${date}`;
 
+                    const chartData = parties.map(party => {
+                        return {
+                            name: party.Name,
+                            y: party.Seats,
+                            color: party.Color,
+                            label: `${party.Name} (${party.Seats})`
+                        };
+                    });
 
-                    // Remove all existing rows
-                    const extraFields = document.getElementById("extra-fields");
+                      // Remove all existing rows
+                      const extraFields = document.getElementById("extra-fields");
                     extraFields.innerHTML = '';
                     // Reset fieldCounter
                     fieldCounter = 3;
@@ -186,43 +190,52 @@
                         document.getElementById("add-another-party").style.display = "none";
 
                     });
-                    // console.log(source)
-                    // const agencyName = source.split(" - ")[0]; // Extract only the agency name
-                    // console.log(agencyName)
 
-                    myChart = Highcharts.chart('myChart', {
-                        chart: {
-                            type: 'item'
-                        },
-                        title: {
-                            text: `${agency} - ${date}`
-                        },
-                        series: [{
-                            name: 'Seats',
-                            keys: ['name', 'y', 'color', 'label'],
-                            data: parties.map(party => {
-                                return {
-                                    name: party.Name,
-                                    y: party.Seats,
-                                    color: party.Color,
-                                    label: `${party.Name} (${party.Seats})`
-                                };
-                            }),
-                            dataLabels: {
-                                enabled: true,
-                                format: '{point.label}'
+                    if (myChart) {
+        const series = myChart.series[0];
+        
+        // If new data has more points, add the extra points
+        while (series.data.length < chartData.length) {
+            series.addPoint({ y: 0 }, false); // Add a dummy point with value 0, without redrawing
+        }
+        
+        // If new data has fewer points, remove the extra points
+        while (series.data.length > chartData.length) {
+            series.data[series.data.length - 1].remove(false); // Remove the last point, without redrawing
+        }
+        
+        // Update the data for the existing points
+        for (let i = 0; i < chartData.length; i++) {
+            series.data[i].update(chartData[i], false); // Update the point, without redrawing
+        }
+        
+        myChart.setTitle({ text: `${agency} - ${date}` });
+        myChart.redraw(); // Redraw the chart once after all updates
+
+    } else {
+                        // Create the chart if it doesn't exist
+                        myChart = Highcharts.chart('myChart', {
+                            chart: {
+                                type: 'item'
                             },
-
-                            // Circular options
-                            center: ['50%', '88%'],
-                            size: '150%',
-                            startAngle: -100,
-                            endAngle: 100
-                        }]//,
-                        // legend: {
-                        //     labelFormat: '{name} <span style="opacity: 0.4">{y}</span>'
-                        // }
-                    });
+                            title: {
+                                text: `${agency} - ${date}`
+                            },
+                            series: [{
+                                name: 'Seats',
+                                keys: ['name', 'y', 'color', 'label'],
+                                data: chartData,
+                                dataLabels: {
+                                    enabled: true,
+                                    format: '{point.label}'
+                                },
+                                center: ['50%', '88%'],
+                                size: '150%',
+                                startAngle: -100,
+                                endAngle: 100
+                            }]
+                        });
+                    }
                 } catch (error) {
                     console.error("Fetch error:", error);
                 }
