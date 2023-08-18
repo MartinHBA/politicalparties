@@ -89,7 +89,7 @@
                     <input type="text" id="party1" required>
                     <label for="party1">Strana 1</label>
                 </div>
-                <div class="input-field col s5">
+                <div class="input-field col s4">
                     <input type="number" id="seats1" min="0" required>
                     <label for="seats1">Mandáty strany 1</label>
                 </div>
@@ -102,7 +102,7 @@
                     <input type="text" id="party2" required>
                     <label for="party2">Strana 2</label>
                 </div>
-                <div class="input-field col s5">
+                <div class="input-field col s4">
                     <input type="number" id="seats2" min="0" required>
                     <label for="seats2">Mandáty strany 2</label>
                 </div>
@@ -115,7 +115,7 @@
                     <input type="text" id="party3" required>
                     <label for="party3">Strana 3</label>
                 </div>
-                <div class="input-field col s5">
+                <div class="input-field col s4">
                     <input type="number" id="seats3" min="0" required>
                     <label for="seats3">Mandáty strany 3</label>
                 </div>
@@ -322,7 +322,7 @@
                 rowDiv.appendChild(partyDiv);
 
                 let seatsDiv = document.createElement("div");
-                seatsDiv.className = "input-field col s5";
+                seatsDiv.className = "input-field col s4";
                 seatsDiv.innerHTML = `
         <input type="number" id="seats${fieldCounter}" min="0" required>
         <label for="seats${fieldCounter}">Mandáty strany ${fieldCounter}</label>`;
