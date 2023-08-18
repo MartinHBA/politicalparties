@@ -33,6 +33,14 @@
     .col-small {
       grid-column-end: span 2;
     }
+     .btn-container {
+      margin-top: 20px; /* Added some top margin for spacing */
+    }
+    .custom-btn {
+    width: 100%;
+    margin: 3 auto; /* This will center the button within the grid cell */
+}
+
   </style>
   <script>
     const valuesArray = JSON.parse(localStorage.getItem('partyNames')) || [];
@@ -136,17 +144,18 @@
 <body>
   <div class="container">
     <div id="pairsContainer"></div>
-    <div class="pair grid-container">
+    <div class="grid-container btn-container">
       <div class="col">
-        <button class="btn waves-effect waves-light" onclick="addAnotherPair()">Pridaj Vzájomné Vylúčenie
+        <button class="btn waves-effect waves-light custom-btn" onclick="addAnotherPair()">Pridaj Vzájomné Vylúčenie
           <i class="material-icons right">add</i>
         </button>
       </div>
       <div class="col">
-        <button class="btn waves-effect waves-light" onclick="displaySelectedPairs()">Odoslať
+        <button class="btn waves-effect waves-light custom-btn" onclick="displaySelectedPairs()">Odoslať
           <i class="material-icons right">send</i>
         </button>
       </div>
+      <div class="col-small"></div> <!-- Empty column to match the exclusion pairs layout -->
     </div>
   </div>
   <div id="selectedPairs"></div>
