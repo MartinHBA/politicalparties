@@ -46,14 +46,14 @@
 
 <body>
     <div class="container">
-        <h1 class="center-align">Politické strany a Mandáty</h1>
+        <h3 class="center-align">Politické strany a Mandáty</h3>
         <h6 class="center-align">Výpočet možných kombinácií potrebných na prekročenie 75 mandátov - vládnej väčšiny</h6>
         <div class="chart-container">
             <div id="myChart"></canvas>
             </div>
         </div>
         <div class="row">
-            <div class="input-field col s5">
+            <div class="input-field col s6">
                 <select id="source" onchange="fetchParties()">
                     {{range .}}
                     <option value="{{.}}">{{.}}</option>
@@ -61,20 +61,29 @@
                 </select>
                 <label>Prieskumy</label>
             </div>
-            <div class="input-field col s3">
+            <div class="input-field col s6">
                 <button class="btn waves-effect waves-light" type="submit" form="party-form" style="width: 100%;">Odoslať
                     <i class="material-icons right">send</i>
                 </button>
             </div>
-            <div class="input-field col s3">
-                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
-                    style="width: 100%;">Vzájomné Vylúčenia</button>
+        </div>
+        <div class="row" style="background-color: #e0e0e0; border-radius: 5px; padding: 10px 0;">
+            <div class="col s5" style="display: flex; align-items: center; padding-left: 20px;">
+                Prípadne zadefinuj vzájomné vylúčenia
+            </div>
+            <div class="col s1" style="display: flex; align-items: center; justify-content: center;">
+                <i class="material-icons">arrow_forward</i>
+            </div>
+            <div class="col s6">
+                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)" style="width: 100%;">Vzájomné Vylúčenia</button>
             </div>
         </div>
-        <!--<div class="Help">Načítaj prieskum, alebo zadaj mandáty ručne:</div>-->
+        
+        
+        
         <form id="party-form">
             <div class="row">
-                <div class="input-field col s5">
+                <div class="input-field col s6">
                     <input type="text" id="party1" required>
                     <label for="party1">Strana 1</label>
                 </div>
@@ -82,12 +91,12 @@
                     <input type="number" id="seats1" min="0" required>
                     <label for="seats1">Mandáty strany 1</label>
                 </div>
-                <div class="input-field col s2">
+                <div class="input-field col s1">
                     <input type="color" id="color1" value="#1e88e5">
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s5">
+                <div class="input-field col s6">
                     <input type="text" id="party2" required>
                     <label for="party2">Strana 2</label>
                 </div>
@@ -95,12 +104,12 @@
                     <input type="number" id="seats2" min="0" required>
                     <label for="seats2">Mandáty strany 2</label>
                 </div>
-                <div class="input-field col s2">
+                <div class="input-field col s1">
                     <input type="color" id="color2" value="#5e35b1">
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s5">
+                <div class="input-field col s6">
                     <input type="text" id="party3" required>
                     <label for="party3">Strana 3</label>
                 </div>
@@ -108,13 +117,13 @@
                     <input type="number" id="seats3" min="0" required>
                     <label for="seats3">Mandáty strany 3</label>
                 </div>
-                <div class="input-field col s2">
+                <div class="input-field col s1">
                     <input type="color" id="color3" value="#f4511e">
                 </div>
             </div>
             <div id="extra-fields"></div>
             <div class="row">
-                <div class="input-field col s5">
+                <div class="input-field col s6">
                     <button class="btn waves-effect waves-light" type="button" id="add-another-party"
                         onclick="addPartyField()" style="width: 80%;">Pridaj stranu</button>
                 </div>
@@ -293,7 +302,7 @@
                 rowDiv.className = "row";
 
                 let partyDiv = document.createElement("div");
-                partyDiv.className = "input-field col s5";
+                partyDiv.className = "input-field col s6";
                 partyDiv.innerHTML = `
         <input type="text" id="party${fieldCounter}" required>
         <label for="party${fieldCounter}">Strana ${fieldCounter}</label>`;
@@ -307,7 +316,7 @@
                 rowDiv.appendChild(seatsDiv);
 
                 let colorDiv = document.createElement("div");
-                colorDiv.className = "input-field col s2";
+                colorDiv.className = "input-field col s1";
                 colorDiv.innerHTML = `
         <input type="color" id="color${fieldCounter}" value="${getRandomColor()}">`;
                 rowDiv.appendChild(colorDiv);
