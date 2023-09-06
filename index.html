@@ -38,6 +38,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:image" content="https://politicalparties.azurewebsites.net/static/politicalPartiesBanner2.jpg" />
     <title>Politické strany a Mandáty</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -133,7 +134,15 @@
                 </div>
             </div>
         </form>
-
+        <!-- Footer -->
+        <footer class="page-footer" style="background-color: #575757; color: white; padding: 1px 0;">
+            <div class="footer-copyright">
+                <div class="container">
+                    © 2023 All Rights Reserved
+                    <span class="grey-text text-lighten-4 right">Contact <a href="https://www.facebook.com/martin.huba.921" target="_blank"><i class="fab fa-facebook-f"></i> Facebook</a></span>
+                </div>
+            </div>
+        </footer>
         <script>
 
             let fieldCounter = 3;
@@ -164,8 +173,8 @@
                         };
                     });
 
-                      // Remove all existing rows
-                      const extraFields = document.getElementById("extra-fields");
+                    // Remove all existing rows
+                    const extraFields = document.getElementById("extra-fields");
                     extraFields.innerHTML = '';
                     // Reset fieldCounter
                     fieldCounter = 3;
@@ -192,27 +201,27 @@
                     });
 
                     if (myChart) {
-        const series = myChart.series[0];
-        
-        // If new data has more points, add the extra points
-        while (series.data.length < chartData.length) {
-            series.addPoint({ y: 0 }, false); // Add a dummy point with value 0, without redrawing
-        }
-        
-        // If new data has fewer points, remove the extra points
-        while (series.data.length > chartData.length) {
-            series.data[series.data.length - 1].remove(false); // Remove the last point, without redrawing
-        }
-        
-        // Update the data for the existing points
-        for (let i = 0; i < chartData.length; i++) {
-            series.data[i].update(chartData[i], false); // Update the point, without redrawing
-        }
-        
-        myChart.setTitle({ text: `${agency} - ${date}` });
-        myChart.redraw(); // Redraw the chart once after all updates
+                        const series = myChart.series[0];
 
-    } else {
+                        // If new data has more points, add the extra points
+                        while (series.data.length < chartData.length) {
+                            series.addPoint({ y: 0 }, false); // Add a dummy point with value 0, without redrawing
+                        }
+
+                        // If new data has fewer points, remove the extra points
+                        while (series.data.length > chartData.length) {
+                            series.data[series.data.length - 1].remove(false); // Remove the last point, without redrawing
+                        }
+
+                        // Update the data for the existing points
+                        for (let i = 0; i < chartData.length; i++) {
+                            series.data[i].update(chartData[i], false); // Update the point, without redrawing
+                        }
+
+                        myChart.setTitle({ text: `${agency} - ${date}` });
+                        myChart.redraw(); // Redraw the chart once after all updates
+
+                    } else {
                         // Create the chart if it doesn't exist
                         myChart = Highcharts.chart('myChart', {
                             chart: {
