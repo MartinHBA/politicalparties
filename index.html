@@ -281,6 +281,24 @@
                                             myChart.redraw();  // Redraw the chart to apply color changes
 
                                             event.preventDefault();  // Prevent the default action of hiding the series
+                                        },
+                                        click: function (event) {
+                                            if (this.isActive) {
+                                                totalSeats -= this.y;
+                                                this.update({ color: '#cccccc' }, false);  // Update color to grey
+                                            } else {
+                                                totalSeats += this.y;
+                                                this.update({ color: this.options.originalColor }, false);  // Update color to original
+                                            }
+                                            this.isActive = !this.isActive;
+
+                                            seatsLabel.attr({
+                                                text: `Spolu: ${totalSeats}`
+                                            });
+
+                                            myChart.redraw();  // Redraw the chart to apply color changes
+
+                                            event.preventDefault();  // Prevent the default action of hiding the series
                                         }
                                     }
                                 }
