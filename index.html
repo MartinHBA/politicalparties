@@ -139,7 +139,9 @@
             <div class="footer-copyright">
                 <div class="container">
                     © 2023 All Rights Reserved
-                    <span class="grey-text text-lighten-4 right">Contact <a href="https://www.facebook.com/martin.huba.921" target="_blank"><i class="fab fa-facebook-f"></i> Facebook</a></span>
+                    <span class="grey-text text-lighten-4 right">Contact <a
+                            href="https://www.facebook.com/martin.huba.921" target="_blank"><i
+                                class="fab fa-facebook-f"></i> Facebook</a></span>
                 </div>
             </div>
         </footer>
@@ -147,6 +149,13 @@
 
             let fieldCounter = 3;
             let myChart = null;
+
+            // Initialize totalSeats variable to keep track of the total number of seats for activated parties
+            let totalSeats = 150;
+            // Define seatsLabel outside the fetchParties function
+            let seatsLabel;
+
+
             async function fetchParties() {
                 try {
                     const selectedValue = document.getElementById('source').value;
@@ -164,12 +173,16 @@
                     const date = result.date;
                     localStorage.setItem('agencyDate', date);
 
+                    // Reset totalSeats to 150
+                    totalSeats = 150;
                     const chartData = parties.map(party => {
                         return {
                             name: party.Name,
                             y: party.Seats,
                             color: party.Color,
-                            label: `${party.Name} (${party.Seats})`
+                            label: `${party.Name} (${party.Seats})`,
+                            isActive: true,  // Initialize isActive to true
+                            originalColor: party.Color  // Store the original color
                         };
                     });
 
@@ -219,7 +232,14 @@
                         }
 
                         myChart.setTitle({ text: `${agency} - ${date}` });
+                        // Update the seatsLabel text
+                        if (seatsLabel) {
+                            seatsLabel.attr({
+                                text: `Spolu: ${totalSeats}`
+                            });
+                        }
                         myChart.redraw(); // Redraw the chart once after all updates
+
 
                     } else {
                         // Create the chart if it doesn't exist
@@ -241,10 +261,90 @@
                                 center: ['50%', '88%'],
                                 size: '150%',
                                 startAngle: -100,
-                                endAngle: 100
-                            }]
+                                endAngle: 100,
+                                point: {
+                                    events: {
+                                        legendItemClick: function (event) {
+                                            if (this.isActive) {
+                                                totalSeats -= this.y;
+                                                this.update({ color: '#cccccc' }, false);  // Update color to grey
+                                            } else {
+                                                totalSeats += this.y;
+                                                this.update({ color: this.options.originalColor }, false);  // Update color to original
+                                            }
+                                            this.isActive = !this.isActive;
+
+                                            seatsLabel.attr({
+                                                text: `Spolu: ${totalSeats}`
+                                            });
+
+                                            myChart.redraw();  // Redraw the chart to apply color changes
+
+                                            event.preventDefault();  // Prevent the default action of hiding the series
+                                        },
+                                        click: function (event) {
+                                            if (this.isActive) {
+                                                totalSeats -= this.y;
+                                                this.update({ color: '#cccccc' }, false);  // Update color to grey
+                                            } else {
+                                                totalSeats += this.y;
+                                                this.update({ color: this.options.originalColor }, false);  // Update color to original
+                                            }
+                                            this.isActive = !this.isActive;
+
+                                            seatsLabel.attr({
+                                                text: `Spolu: ${totalSeats}`
+                                            });
+
+                                            myChart.redraw();  // Redraw the chart to apply color changes
+
+                                            event.preventDefault();  // Prevent the default action of hiding the series
+                                        }
+                                    }
+                                }
+                            }],
+                            legend: {
+                                itemStyle: {
+                                    color: '#000000',
+                                    fontSize: '16px',  // Increase font size
+                                    //fontWeight: 'bold' // Make it bold if you like
+                                },
+                                itemHiddenStyle: {
+                                    color: '#cccccc'
+                                },
+                                itemEvents: {
+                                    click: function (event) {
+                                        const point = this.series.chart.get(this.name);
+                                        if (point.isActive) {
+                                            totalSeats -= point.y;
+                                            point.update({ color: '#cccccc' }, false);  // Update color to grey
+                                        } else {
+                                            totalSeats += point.y;
+                                            point.update({ color: point.options.color }, false);  // Update color to original
+                                        }
+                                        point.isActive = !point.isActive;
+
+                                        // Update the total number of seats for activated parties
+                                        document.getElementById('total-seats-count').innerText = totalSeats;
+
+                                        myChart.redraw();  // Redraw the chart to apply color changes
+
+                                        // Prevent the default action of hiding the series
+                                        return false;
+                                    }
+                                }
+                            }
                         });
+                        // Create the seatsLabel if it doesn't exist
+                        if (!seatsLabel) {
+                            seatsLabel = myChart.renderer.text(`Spolu: ${totalSeats}`, 40, 40)
+                                .css({
+                                    fontSize: '20px'
+                                })
+                                .add();
+                        }
                     }
+
                 } catch (error) {
                     console.error("Fetch error:", error);
                 }
