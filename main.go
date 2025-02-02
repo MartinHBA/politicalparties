@@ -26,8 +26,17 @@ type ExclusionPair struct {
 
 var pairs = []ExclusionPair{}
 
+var partyColors map[string]string
+
 // develop branch comment
 func main() {
+
+	var err error
+	partyColors, err = loadPartyColors("PartyColors.csv")
+	if err != nil {
+		log.Fatal("Error loading party colors: ", err)
+	}
+
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -42,6 +51,35 @@ func main() {
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
+}
+
+func loadPartyColors(filename string) (map[string]string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	reader.Comma = ','
+	reader.LazyQuotes = true
+
+	rows, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	colors := make(map[string]string)
+	// Assuming the first row is a header
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		if len(row) >= 2 {
+			colors[row[0]] = row[1]
+		}
+	}
+	return colors, nil
 }
 
 func resultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -351,6 +389,10 @@ func fetchAndFilterParties(filename string, agency string) ([]Party, string, err
 	var parties []Party
 	var date string
 	for _, row := range rows {
+		// Check that the row has at least 4 columns (date, agency, name, seat)
+		if len(row) < 4 {
+			continue
+		}
 		if row[1] == agency {
 			if date == "" {
 				date = row[0]
@@ -360,10 +402,17 @@ func fetchAndFilterParties(filename string, agency string) ([]Party, string, err
 				return nil, "", err
 			}
 
+			// Look up the color from the partyColors mapping.
+			color, ok := partyColors[row[2]]
+			if !ok {
+				// If no color is found, you can assign a default color.
+				color = "#000000"
+			}
+
 			party := Party{
 				Name:  row[2],
 				Seats: seats,
-				Color: row[4],
+				Color: color,
 			}
 			parties = append(parties, party)
 		}
