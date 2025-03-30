@@ -4,460 +4,467 @@
 <head>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QXR2KE4GRN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-QXR2KE4GRN');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://politicalparties.azurewebsites.net/static/politicalPartiesBanner2.jpg" />
+    <title>Politické strany a Mandáty - Kalkulačka Koalícií</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Highcharts -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/item-series.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
     <style>
-        .chart-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .material-icons {
-            vertical-align: middle;
-        }
+        body { display: flex; min-height: 100vh; flex-direction: column; }
+        main { flex: 1 0 auto; }
+        .container { margin-top: 20px; width: 90%; max-width: 1200px; }
+        .chart-container { width: 100%; position: relative; margin-bottom: 20px; border: 1px solid #eee; min-height: 350px; } /* Slightly taller min-height */
+        .input-field button { height: 3rem; line-height: 3rem; margin-top: 1rem; }
+        .btn { display: flex; align-items: center; justify-content: center; width: 100%; text-transform: none; }
+        .material-icons { vertical-align: middle; margin-left: 5px; }
+        .material-icons.left { margin-left: 0; margin-right: 5px; }
+        #credit-info-display { margin-top: -15px; margin-bottom: 15px; font-style: italic; color: #555; text-align: left; padding-left: 0.75rem; font-size: 0.9em; min-height: 1.2em; }
+        .input-field input[type=color] { height: 2rem; width: 100%; max-width: 40px; padding: 2px; margin-top: 1.5rem; border: 1px solid #ccc; cursor: pointer; vertical-align: middle; }
+        #party-form .row { margin-bottom: 5px; }
+        #party-form .input-field { margin-top: 0.5rem; }
+        .page-footer { padding-top: 0; background-color: #575757; color: white; }
+        .footer-copyright { padding: 15px 0; background-color: rgba(0, 0, 0, 0.1); }
+        footer .container { width: 90%; max-width: 1200px; }
+        footer a { color: #b0bec5; }
+        footer a:hover { color: #eceff1; }
+        /* Highcharts loading/message styling */
+        #myChart .chart-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2em; color: #888; text-align: center; }
+        #myChart.loading .chart-message::before { content: 'Načítavam graf...'; }
+        #myChart .chart-message.error { color: #f44336; } /* Red for errors */
     </style>
-
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-QXR2KE4GRN');
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:image" content="https://politicalparties.azurewebsites.net/static/politicalPartiesBanner2.jpg" />
-    <title>Politické strany a Mandáty</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </head>
 
 <body>
-    <div class="container">
-        <h4 class="center-align">Politické strany a Mandáty</h4>
-        <h6 class="center-align">Výpočet možných kombinácií potrebných na prekročenie 75 mandátov - vládnej väčšiny</h6>
-        <div class="chart-container">
-            <div id="myChart"></canvas>
+    <main>
+        <div class="container">
+            <h4 class="center-align">Politické strany a Mandáty</h4>
+            <h6 class="center-align">Kalkulačka možných vládnych koalícií (nad 75 mandátov)</h6>
+
+            <!-- Chart Container -->
+            <div class="chart-container">
+                <!-- Add placeholder for messages inside the chart div -->
+                <div id="myChart"><div class="chart-message">Vyberte prieskum pre zobrazenie grafu.</div></div>
+            </div>
+
+            <!-- Poll Selection and Submit Row -->
+            <div class="row valign-wrapper">
+                <div class="input-field col s12 m6">
+                    <select id="source" onchange="fetchParties()">
+                        <option value="" disabled selected>Vyberte prieskum...</option>
+                        {{range .}}
+                        <option value="{{.}}">{{.}}</option>
+                        {{end}}
+                    </select>
+                    <label>Prieskum / Voľby</label>
+                </div>
+                <div class="input-field col s12 m6">
+                    <button class="btn waves-effect waves-light" type="submit" form="party-form" id="submit-combinations-button" disabled>
+                        Vypočítaj Kombinácie
+                        <i class="material-icons right">send</i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row for Credit Info Display -->
+            <div class="row">
+                 <div class="col s12">
+                     <p id="credit-info-display"> </p>
+                 </div>
+             </div>
+
+            <!-- Exclusions Row -->
+            <div class="row valign-wrapper" style="background-color: #f5f5f5; border-radius: 5px; padding: 10px 0; margin-bottom: 20px;">
+                <div class="col s5" style="display: flex; align-items: center; padding-left: 20px;">
+                    Zohľadniť vzájomné vylúčenia strán?
+                </div>
+                <div class="col s1" style="display: flex; align-items: center; justify-content: center;">
+                    <i class="material-icons grey-text text-darken-1">arrow_forward</i>
+                </div>
+                <div class="col s6">
+                    <button class="btn waves-effect waves-light grey darken-1" type="button" onclick="exclusionsForm(event)" id="define-exclusions-button" disabled>
+                        Definovať Vylúčenia
+                    </button>
+                </div>
+            </div>
+
+            <!-- Party Input Form -->
+            <h5 class="light grey-text text-darken-1">Strany a mandáty</h5>
+            <form id="party-form">
+                <!-- Template Row -->
+                <div class="row party-row-template" style="display: none;">
+                    <div class="input-field col s6">
+                        <input type="text" id="party_tpl" name="party_tpl"><label for="party_tpl">Strana</label>
+                    </div>
+                    <div class="input-field col s5">
+                        <input type="number" id="seats_tpl" name="seats_tpl" min="0"><label for="seats_tpl">Mandáty</label>
+                    </div>
+                    <div class="input-field col s1">
+                        <input type="color" id="color_tpl" name="color_tpl" value="#cccccc" title="Farba strany">
+                    </div>
+                </div>
+                <!-- Populated Rows Area -->
+                <div id="party-fields-area">
+                     <p id="no-parties-message" class="center-align grey-text">Najprv vyberte prieskum alebo pridajte strany manuálne.</p>
+                </div>
+                <!-- Add Party Button Row -->
+                <div class="row">
+                    <div class="input-field col s12 m6 offset-m3 center-align">
+                        <button class="btn waves-effect waves-light blue-grey lighten-1" type="button" id="add-another-party" onclick="addPartyField()" >
+                            <i class="material-icons left">add</i>Pridať Stranu Manuálne
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div> <!-- End container -->
+    </main>
+
+    <footer class="page-footer">
+        <div class="footer-copyright">
+            <div class="container">
+                © 2024 Martin Huba. Všetky práva vyhradené.
+                <span class="grey-text text-lighten-4 right">Kontakt: <a href="https://www.facebook.com/martin.huba.921" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i> Facebook</a></span>
             </div>
         </div>
-        <div class="row valign-wrapper">
-            <div class="input-field col s6">
-                <select id="source" onchange="fetchParties()">
-                    {{range .}}
-                    <option value="{{.}}">{{.}}</option>
-                    {{end}}
-                </select>
-                <label>Prieskumy</label>
-            </div>
-            <div class="input-field col s6">
-                <button class="btn waves-effect waves-light" type="submit" form="party-form"
-                    style="width: 100%;">Odoslať
-                    <i class="material-icons right">send</i>
-                </button>
-            </div>
-        </div>
-        <div class="row valign-wrapper" style="background-color: #e0e0e0; border-radius: 5px; padding: 10px 0;">
-            <div class="col s5" style="display: flex; align-items: center; padding-left: 20px;">
-                Prípadne zadefinuj vzájomné vylúčenia
-            </div>
-            <div class="col s1" style="display: flex; align-items: center; justify-content: center;">
-                <i class="material-icons">arrow_forward</i>
-            </div>
-            <div class="col s6">
-                <button class="btn waves-effect waves-light" type="button" onclick="exclusionsForm(event)"
-                    style="width: 100%;">Vzájomné Vylúčenia</button>
-            </div>
-        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        let fieldCounter = 0;
+        let myChart = null;
+        let seatsLabel = null;
+        let totalSeats = 0;
+        const partyFieldsArea = document.getElementById('party-fields-area');
+        const addPartyButton = document.getElementById('add-another-party');
+        const noPartiesMessage = document.getElementById('no-parties-message');
+        const submitButton = document.getElementById('submit-combinations-button');
+        const exclusionsButton = document.getElementById('define-exclusions-button');
+        const chartContainer = document.getElementById('myChart'); // Get container reference
+
+        // Function to display messages within the chart container
+        function setChartMessage(message, isError = false) {
+            chartContainer.innerHTML = `<div class="chart-message ${isError ? 'error' : ''}">${message}</div>`;
+             // If destroying chart, make sure label is gone too
+             if (seatsLabel) {
+                 seatsLabel.destroy();
+                 seatsLabel = null;
+             }
+             if (myChart) {
+                 myChart.destroy();
+                 myChart = null;
+             }
+        }
 
 
+        async function fetchParties() {
+            console.log("JS: fetchParties called");
+            const creditDisplayElement = document.getElementById('credit-info-display');
+            const sourceDropdown = document.getElementById('source');
+            const selectedValue = sourceDropdown.value;
 
-        <form id="party-form">
-            <div class="row">
-                <div class="input-field col s6">
-                    <input type="text" id="party1" required>
-                    <label for="party1">Strana 1</label>
-                </div>
-                <div class="input-field col s5">
-                    <input type="number" id="seats1" min="0" required>
-                    <label for="seats1">Mandáty strany 1</label>
-                </div>
-                <div class="input-field col s1">
-                    <input type="color" id="color1" value="#1e88e5">
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s6">
-                    <input type="text" id="party2" required>
-                    <label for="party2">Strana 2</label>
-                </div>
-                <div class="input-field col s5">
-                    <input type="number" id="seats2" min="0" required>
-                    <label for="seats2">Mandáty strany 2</label>
-                </div>
-                <div class="input-field col s1">
-                    <input type="color" id="color2" value="#5e35b1">
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s6">
-                    <input type="text" id="party3" required>
-                    <label for="party3">Strana 3</label>
-                </div>
-                <div class="input-field col s5">
-                    <input type="number" id="seats3" min="0" required>
-                    <label for="seats3">Mandáty strany 3</label>
-                </div>
-                <div class="input-field col s1">
-                    <input type="color" id="color3" value="#f4511e">
-                </div>
-            </div>
-            <div id="extra-fields"></div>
-            <div class="row">
-                <div class="input-field col s6">
-                    <button class="btn waves-effect waves-light" type="button" id="add-another-party"
-                        onclick="addPartyField()" style="width: 80%;">Pridaj stranu</button>
-                </div>
-                <div class="input-field col s2">
-                </div>
-            </div>
-        </form>
-        <!-- Footer -->
-        <footer class="page-footer" style="background-color: #575757; color: white; padding: 1px 0;">
-            <div class="footer-copyright">
-                <div class="container">
-                    © 2023 All Rights Reserved
-                    <span class="grey-text text-lighten-4 right">Contact <a
-                            href="https://www.facebook.com/martin.huba.921" target="_blank"><i
-                                class="fab fa-facebook-f"></i> Facebook</a></span>
-                </div>
-            </div>
-        </footer>
-        <script>
+            // --- Reset UI State ---
+            creditDisplayElement.textContent = ' ';
+            partyFieldsArea.innerHTML = ''; // Clear previous fields
+            noPartiesMessage.style.display = 'none';
+            addPartyButton.style.display = 'none'; // Hide manual add by default
+            submitButton.disabled = true;
+            exclusionsButton.disabled = true;
+            // Clear previous chart/message and show loading
+            setChartMessage('Načítavam graf...', false); // Use helper to set loading message
+            chartContainer.classList.add('loading'); // Add class for potential CSS styling
 
-            let fieldCounter = 3;
-            let myChart = null;
+            if (!selectedValue) {
+                console.log("JS: No source selected.");
+                setChartMessage('Vyberte prieskum pre zobrazenie grafu.', false);
+                chartContainer.classList.remove('loading');
+                noPartiesMessage.style.display = 'block'; // Show default message
+                noPartiesMessage.textContent = 'Najprv vyberte prieskum alebo pridajte strany manuálne.';
+                addPartyButton.style.display = 'block'; // Show manual add
+                return;
+            }
 
-            // Initialize totalSeats variable to keep track of the total number of seats for activated parties
-            let totalSeats = 150;
-            // Define seatsLabel outside the fetchParties function
-            let seatsLabel;
+            creditDisplayElement.textContent = 'Načítavam dáta...';
+            console.log(`JS: Fetching data for source: ${selectedValue}`);
 
+            try {
+                localStorage.setItem('selectedOption', selectedValue);
 
-            async function fetchParties() {
-                try {
-                    const selectedValue = document.getElementById('source').value;
-                    const agency = selectedValue.split(" - ")[0]; // Extract only the agency name
+                const response = await fetch(`/fetch?source=${encodeURIComponent(selectedValue)}`);
+                console.log(`JS: Fetch response status: ${response.status}`);
 
-                    // put into local storage info which agency was fetched
-                    localStorage.setItem('selectedOption', agency);
+                if (!response.ok) {
+                    let errorMsg = `HTTP chyba! Status: ${response.status}`;
+                    try { const errData = await response.json(); errorMsg = errData.message || errData.error || errorMsg; } catch (e) {}
+                    throw new Error(errorMsg);
+                }
 
-                    const response = await fetch(`/fetch?source=${agency}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const parties = result.parties;
-                    const date = result.date;
-                    localStorage.setItem('agencyDate', date);
+                const result = await response.json();
+                console.log("JS: Received data:", result); // Log the raw received object
 
-                    // Reset totalSeats to 150
-                    totalSeats = 150;
+                 // Ensure result and result.parties exist
+                if (!result || !result.parties) {
+                    console.error("JS: Invalid data structure received from backend:", result);
+                    throw new Error("Neplatná odpoveď zo servera.");
+                }
+
+                const parties = result.parties;
+                const date = result.date;
+                const creditInfo = result.creditInfo;
+
+                creditDisplayElement.textContent = creditInfo || 'Zdroj neuvedený';
+                localStorage.setItem('agencyDate', date || '');
+
+                // --- Reset and Populate ---
+                fieldCounter = 0;
+                partyFieldsArea.innerHTML = ''; // Clear again just in case
+                totalSeats = 0;
+
+                if (parties.length === 0) {
+                    console.warn("JS: No parties found in received data for:", selectedValue);
+                    setChartMessage('Pre tento prieskum neboli nájdené žiadne strany (alebo mali 0 mandátov).', false);
+                    noPartiesMessage.textContent = 'Pre tento prieskum neboli nájdené žiadne strany. Môžete ich pridať manuálne.';
+                    noPartiesMessage.style.display = 'block';
+                    addPartyButton.style.display = 'block';
+                } else {
+                    console.log(`JS: Processing ${parties.length} parties.`);
+                    noPartiesMessage.style.display = 'none';
+                    addPartyButton.style.display = 'none'; // Hide manual add if data loaded
+
                     const chartData = parties.map(party => {
+                        console.log(`JS: Adding field for ${party.name}`);
+                        addPartyField(party.name, party.seats, party.color); // Populate form row
+                        totalSeats += party.seats;
                         return {
-                            name: party.Name,
-                            y: party.Seats,
-                            color: party.Color,
-                            label: `${party.Name} (${party.Seats})`,
-                            isActive: true,  // Initialize isActive to true
-                            originalColor: party.Color  // Store the original color
+                            name: party.name, y: party.seats, color: party.color,
+                            label: `${party.name} (${party.seats})`,
+                            isActive: true, originalColor: party.color
                         };
                     });
 
-                    // Remove all existing rows
-                    const extraFields = document.getElementById("extra-fields");
-                    extraFields.innerHTML = '';
-                    // Reset fieldCounter
-                    fieldCounter = 3;
+                    console.log("JS: All party fields added. Updating Materialize text fields.");
+                    M.updateTextFields(); // IMPORTANT: Update labels AFTER all fields are appended
 
+                    console.log("JS: Rendering chart with chartData:", chartData);
+                    renderChart(chartData, selectedValue, date); // Render the chart
 
-                    parties.forEach((party, index) => {
-                        if (index < 3) {
-                            document.getElementById(`party${index + 1}`).value = party.Name;
-                            document.getElementById(`seats${index + 1}`).value = party.Seats;
-                            document.getElementById(`color${index + 1}`).value = party.Color; // Add this line
-                            document.querySelector(`label[for="party${index + 1}"]`).classList.add('active');
-                            document.querySelector(`label[for="seats${index + 1}"]`).classList.add('active');
-                        } else {
-                            addPartyField();
-                            document.getElementById(`party${index + 1}`).value = party.Name;
-                            document.getElementById(`seats${index + 1}`).value = party.Seats;
-                            document.getElementById(`color${index + 1}`).value = party.Color; // Add this line
-                            document.querySelector(`label[for="party${index + 1}"]`).classList.add('active');
-                            document.querySelector(`label[for="seats${index + 1}"]`).classList.add('active');
-                        }
-                        // since it's fetched, hide "add another party button"
-                        document.getElementById("add-another-party").style.display = "none";
-
-                    });
-
+                    // Enable buttons only if chart rendering didn't fail (myChart should exist)
                     if (myChart) {
-                        const series = myChart.series[0];
-
-                        // If new data has more points, add the extra points
-                        while (series.data.length < chartData.length) {
-                            series.addPoint({ y: 0 }, false); // Add a dummy point with value 0, without redrawing
-                        }
-
-                        // If new data has fewer points, remove the extra points
-                        while (series.data.length > chartData.length) {
-                            series.data[series.data.length - 1].remove(false); // Remove the last point, without redrawing
-                        }
-
-                        // Update the data for the existing points
-                        for (let i = 0; i < chartData.length; i++) {
-                            series.data[i].update(chartData[i], false); // Update the point, without redrawing
-                        }
-
-                        myChart.setTitle({ text: `${agency} - ${date}` });
-                        // Update the seatsLabel text
-                        if (seatsLabel) {
-                            seatsLabel.attr({
-                                text: `Spolu: ${totalSeats}`
-                            });
-                        }
-                        myChart.redraw(); // Redraw the chart once after all updates
-
-
+                         submitButton.disabled = false;
+                         exclusionsButton.disabled = false;
                     } else {
-                        // Create the chart if it doesn't exist
-                        myChart = Highcharts.chart('myChart', {
-                            chart: {
-                                type: 'item'
-                            },
-                            title: {
-                                text: `${agency} - ${date}`
-                            },
-                            series: [{
-                                name: 'Seats',
-                                keys: ['name', 'y', 'color', 'label'],
-                                data: chartData,
-                                dataLabels: {
-                                    enabled: true,
-                                    format: '{point.label}'
-                                },
-                                center: ['50%', '88%'],
-                                size: '150%',
-                                startAngle: -100,
-                                endAngle: 100,
-                                point: {
-                                    events: {
-                                        legendItemClick: function (event) {
-                                            if (this.isActive) {
-                                                totalSeats -= this.y;
-                                                this.update({ color: '#cccccc' }, false);  // Update color to grey
-                                            } else {
-                                                totalSeats += this.y;
-                                                this.update({ color: this.options.originalColor }, false);  // Update color to original
-                                            }
-                                            this.isActive = !this.isActive;
-
-                                            seatsLabel.attr({
-                                                text: `Spolu: ${totalSeats}`
-                                            });
-
-                                            myChart.redraw();  // Redraw the chart to apply color changes
-
-                                            event.preventDefault();  // Prevent the default action of hiding the series
-                                        },
-                                        click: function (event) {
-                                            if (this.isActive) {
-                                                totalSeats -= this.y;
-                                                this.update({ color: '#cccccc' }, false);  // Update color to grey
-                                            } else {
-                                                totalSeats += this.y;
-                                                this.update({ color: this.options.originalColor }, false);  // Update color to original
-                                            }
-                                            this.isActive = !this.isActive;
-
-                                            seatsLabel.attr({
-                                                text: `Spolu: ${totalSeats}`
-                                            });
-
-                                            myChart.redraw();  // Redraw the chart to apply color changes
-
-                                            event.preventDefault();  // Prevent the default action of hiding the series
-                                        }
-                                    }
-                                }
-                            }],
-                            legend: {
-                                itemStyle: {
-                                    color: '#000000',
-                                    fontSize: '16px',  // Increase font size
-                                    //fontWeight: 'bold' // Make it bold if you like
-                                },
-                                itemHiddenStyle: {
-                                    color: '#cccccc'
-                                },
-                                itemEvents: {
-                                    click: function (event) {
-                                        const point = this.series.chart.get(this.name);
-                                        if (point.isActive) {
-                                            totalSeats -= point.y;
-                                            point.update({ color: '#cccccc' }, false);  // Update color to grey
-                                        } else {
-                                            totalSeats += point.y;
-                                            point.update({ color: point.options.color }, false);  // Update color to original
-                                        }
-                                        point.isActive = !point.isActive;
-
-                                        // Update the total number of seats for activated parties
-                                        document.getElementById('total-seats-count').innerText = totalSeats;
-
-                                        myChart.redraw();  // Redraw the chart to apply color changes
-
-                                        // Prevent the default action of hiding the series
-                                        return false;
-                                    }
-                                }
-                            }
-                        });
-                        // Create the seatsLabel if it doesn't exist
-                        if (!seatsLabel) {
-                            seatsLabel = myChart.renderer.text(`Spolu: ${totalSeats}`, 40, 40)
-                                .css({
-                                    fontSize: '20px'
-                                })
-                                .add();
-                        }
+                         // Keep buttons disabled if chart failed to render
+                         console.error("JS: Chart object is null after renderChart call. Buttons remain disabled.");
                     }
-
-                } catch (error) {
-                    console.error("Fetch error:", error);
-                }
-            }
-
-
-            function getRandomColor() {
-                let letters = '0123456789ABCDEF';
-                let color = '#';
-                for (let i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
-
-            function populateFormAndSubmit(parties) {
-                const partiesInput = document.getElementById("parties");
-                partiesInput.value = JSON.stringify(parties);
-
-                const form = document.getElementById("main-form");
-                form.submit();
-            }
-
-
-            function submitForm(event) {
-                event.preventDefault();
-                let parties = [];
-                for (let i = 1; i <= fieldCounter; i++) {
-                    let party = document.getElementById(`party${i}`).value;
-                    let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
-                    let color = document.getElementById(`color${i}`).value;
-                    parties.push({ name: party, seats: seats, color: color });
                 }
 
-                fetch('/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `parties=${encodeURIComponent(JSON.stringify(parties))}`,
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        localStorage.setItem('chartData', JSON.stringify(data));
-                        window.location.href = '/results';
-                    })
-                    .catch((error) => console.error(error));
+            } catch (error) {
+                console.error("JS: Fetch or processing error:", error);
+                setChartMessage(`Chyba pri načítaní dát: ${error.message}`, true); // Show error in chart area
+                creditDisplayElement.textContent = 'Chyba pri načítaní.';
+                noPartiesMessage.textContent = 'Chyba pri načítaní strán. Skúste znova alebo pridajte manuálne.';
+                noPartiesMessage.style.display = 'block';
+                addPartyButton.style.display = 'block';
+                submitButton.disabled = true; // Ensure disabled on error
+                exclusionsButton.disabled = true;
+            } finally {
+                chartContainer.classList.remove('loading'); // Remove loading class regardless of outcome
+                 console.log("JS: fetchParties finished.");
             }
+        }
+
+        function renderChart(chartData, sourceValue, date) {
+             console.log("JS: renderChart called");
+             const chartElement = document.getElementById('myChart');
+             // Clear previous content explicitly before trying to render
+             chartElement.innerHTML = '';
+             if (myChart) { myChart.destroy(); myChart = null; }
+             if (seatsLabel) { seatsLabel.destroy(); seatsLabel = null; }
 
 
-            function exclusionsForm(event) {
-                event.preventDefault();
-                let partyNames = [];
-                for (let i = 1; i <= fieldCounter; i++) {
-                    let party = document.getElementById(`party${i}`).value;
-                    partyNames.push(party);
+             const agencyNameOnly = sourceValue ? sourceValue.split(" - ")[0] : "Manuálne dáta";
+             const chartTitle = date ? `${agencyNameOnly} - ${date}` : agencyNameOnly;
+
+             // Basic check if chartData is valid
+             if (!chartData || chartData.length === 0) {
+                  console.error("JS: renderChart called with no data.");
+                  setChartMessage('Chyba: Neboli poskytnuté žiadne dáta pre graf.', true);
+                  return;
+             }
+
+             console.log("JS: Attempting to create Highcharts chart.");
+             try {
+                 myChart = Highcharts.chart(chartElement, { // Pass element directly
+                     chart: { type: 'item', styledMode: false },
+                     title: { text: chartTitle },
+                     legend: {
+                         labelFormat: '{name} ({y})',
+                         layout: 'horizontal',   // Arrange items horizontally
+                         align: 'center',        // Center the legend block
+                         verticalAlign: 'bottom', // Place it at the bottom
+                         itemStyle: { fontWeight: 'normal',fontSize: '14px' },
+                         // Optional: Add some margin if it's too close to the chart
+                         // y: 25 // Pushes legend down by 25px from default bottom position
+                     },
+                     tooltip: { pointFormat: '{series.name}: <b>{point.y}</b> ({point.percentage:.1f}%)', headerFormat: '<span style="font-size: 10px">{point.key}</span><br/>' },
+                     series: [{
+                         name: 'Mandáty',
+                         keys: ['name', 'y', 'color', 'label', 'isActive', 'originalColor'],
+                         data: chartData,
+                         dataLabels: { enabled: true, format: '{point.label}', style: { textOutline: 'none', color: '#333', fontSize: '12px', fontWeight: 'normal' }, connectorColor: '#cccccc', connectorPadding: 2 },
+                         center: ['50%', '88%'], size: '150%', startAngle: -100, endAngle: 100,
+                         point: { events: {
+                                 click: function (event) { handlePointToggle(this); event.preventDefault(); },
+                                 legendItemClick: function (event) { const point = this.series.points.find(p => p.name === this.name); if (point) { handlePointToggle(point); } event.preventDefault(); }
+                         }}
+                     }],
+                     credits: { enabled: false }
+                 });
+
+                 // Add total seats label AFTER chart is successfully created
+                 if (myChart && myChart.renderer) {
+                     console.log("JS: Chart created successfully. Adding seats label.");
+                     seatsLabel = myChart.renderer.text(`Spolu: ${totalSeats}`, 10, 25)
+                         .css({ fontSize: '16px', fontWeight: '600', color: '#333' })
+                         .attr({ zIndex: 5 })
+                         .add();
+                 } else {
+                      console.error("JS: Chart object or renderer not available after creation.");
+                      setChartMessage('Chyba pri vykresľovaní štítku súčtu mandátov.', true);
+                 }
+
+             } catch(e) {
+                 console.error("JS: Highcharts rendering error:", e);
+                 setChartMessage(`Chyba pri vykresľovaní grafu: ${e.message}`, true);
+                 if(myChart) { myChart.destroy(); myChart = null; }
+             }
+        }
+
+        function handlePointToggle(point) {
+             if (!point || !point.series || !point.series.chart) return;
+             console.log(`JS: Toggling point: ${point.name}`);
+             const isActive = !point.options.isActive;
+             const currentSeatsLabelText = seatsLabel ? seatsLabel.textStr : 'Label N/A'; // Get current text before update
+
+             if (!isActive) { totalSeats -= point.y; point.update({ color: '#cccccc', isActive: false }, false); }
+             else { totalSeats += point.y; point.update({ color: point.options.originalColor, isActive: true }, false); }
+
+             console.log(`JS: Total active seats now: ${totalSeats}`);
+
+             // Update or recreate the label
+             if (seatsLabel) {
+                  seatsLabel.attr({ text: `Spolu (aktívne): ${totalSeats}` });
+                  console.log(`JS: Updated seatsLabel from "${currentSeatsLabelText}" to "${seatsLabel.textStr}"`);
+             } else if (point.series.chart.renderer) {
+                 console.log("JS: Recreating missing seatsLabel.");
+                 seatsLabel = point.series.chart.renderer.text(`Spolu (aktívne): ${totalSeats}`, 10, 25)
+                     .css({ fontSize: '16px', fontWeight: '600', color: '#333' }).attr({ zIndex: 5 }).add();
+             } else {
+                 console.error("JS: Cannot update or create seatsLabel - renderer missing.");
+             }
+
+             point.series.chart.redraw();
+         }
+
+        function getRandomColor() { return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'); }
+
+        function submitForm(event) {
+            event.preventDefault();
+            console.log("JS: Submit form triggered");
+            let partiesToSubmit = [];
+            const partyRows = partyFieldsArea.querySelectorAll('.party-row');
+            partyRows.forEach(row => {
+                const partyInput = row.querySelector('input[name^="party"]');
+                const seatsInput = row.querySelector('input[name^="seats"]');
+                const colorInput = row.querySelector('input[name^="color"]');
+                if (partyInput && seatsInput && partyInput.value.trim() && seatsInput.value) {
+                    const partyName = partyInput.value.trim(); const seats = parseInt(seatsInput.value, 10); const color = colorInput ? colorInput.value : getRandomColor();
+                    if (seats > 0) {
+                        let includeParty = true;
+                        if (myChart && myChart.series && myChart.series[0]) { const chartPoint = myChart.series[0].points.find(p => p.name === partyName); if (chartPoint && chartPoint.options.isActive === false) { includeParty = false; }}
+                        if (includeParty) { partiesToSubmit.push({ name: partyName, seats: seats, color: color }); }
+                    }
                 }
-                let partiesData = [];
-                for (let i = 1; i <= fieldCounter; i++) {
-                    let party = document.getElementById(`party${i}`).value;
-                    let seats = parseInt(document.getElementById(`seats${i}`).value, 10);
-                    let color = document.getElementById(`color${i}`).value;
-                    partiesData.push({ name: party, seats: seats, color: color });
-                }
-
-                localStorage.setItem('partyNames', JSON.stringify(partyNames));
-                localStorage.setItem('partiesData', JSON.stringify(partiesData));
-                window.location.href = '/exclusions';
-            }
-
-
-            function addPartyField() {
-                fieldCounter++;
-                let extraFields = document.getElementById("extra-fields");
-
-                let rowDiv = document.createElement("div");
-                rowDiv.className = "row";
-
-                let partyDiv = document.createElement("div");
-                partyDiv.className = "input-field col s6";
-                partyDiv.innerHTML = `
-        <input type="text" id="party${fieldCounter}" required>
-        <label for="party${fieldCounter}">Strana ${fieldCounter}</label>`;
-                rowDiv.appendChild(partyDiv);
-
-                let seatsDiv = document.createElement("div");
-                seatsDiv.className = "input-field col s5";
-                seatsDiv.innerHTML = `
-        <input type="number" id="seats${fieldCounter}" min="0" required>
-        <label for="seats${fieldCounter}">Mandáty strany ${fieldCounter}</label>`;
-                rowDiv.appendChild(seatsDiv);
-
-                let colorDiv = document.createElement("div");
-                colorDiv.className = "input-field col s1";
-                colorDiv.innerHTML = `
-        <input type="color" id="color${fieldCounter}" value="${getRandomColor()}">`;
-                rowDiv.appendChild(colorDiv);
-
-                extraFields.appendChild(rowDiv);
-            }
-
-            document.getElementById("party-form").addEventListener("submit", submitForm);
-            document.addEventListener('DOMContentLoaded', function () {
-                var elems = document.querySelectorAll('select');
-                var instances = M.FormSelect.init(elems);
-                // Automatically select the newest poll and fetch data for it
-                const dropdown = document.getElementById("source");
-                dropdown.selectedIndex = 0; // select the first option
-                fetchParties();
             });
+            console.log("JS: Submitting active parties:", partiesToSubmit);
+            if (partiesToSubmit.length === 0) { M.toast({html: 'Vyberte (alebo manuálne zadajte) aspoň jednu aktívnu stranu s mandátmi > 0.'}); return; }
+            fetch('/submit', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `parties=${encodeURIComponent(JSON.stringify(partiesToSubmit))}`})
+            .then(response => { if (!response.ok) { throw new Error(`Server error: ${response.status}`); } return response.json(); })
+            .then((data) => { console.log("JS: Submit successful, redirecting."); localStorage.setItem('chartData', JSON.stringify(data)); localStorage.setItem('submittedParties', JSON.stringify(partiesToSubmit)); window.location.href = '/results'; })
+            .catch((error) => { console.error('JS: Submit error:', error); M.toast({html: `Chyba pri odosielaní: ${error.message}`}); });
+        }
 
-        </script>
+        function exclusionsForm(event) {
+            event.preventDefault(); console.log("JS: Exclusions form triggered"); let partiesData = []; const partyRows = partyFieldsArea.querySelectorAll('.party-row');
+            partyRows.forEach(row => {
+                const partyInput = row.querySelector('input[name^="party"]'); const seatsInput = row.querySelector('input[name^="seats"]'); const colorInput = row.querySelector('input[name^="color"]');
+                if (partyInput && partyInput.value.trim()) { const partyName = partyInput.value.trim(); const seats = parseInt(seatsInput?.value, 10) || 0; const color = colorInput ? colorInput.value : getRandomColor(); partiesData.push({ name: partyName, seats: seats, color: color }); }
+            });
+            if (partiesData.length < 2) { M.toast({html: 'Pre definovanie vylúčení potrebujete aspoň dve strany.'}); return; }
+            console.log("JS: Storing data for exclusions:", partiesData); localStorage.setItem('partyNames', JSON.stringify(partiesData.map(p => p.name))); localStorage.setItem('partiesData', JSON.stringify(partiesData)); window.location.href = '/exclusions';
+        }
 
+        function addPartyField(name = '', seats = '', color = null) {
+            fieldCounter++;
+            // console.log(`JS: Adding party field ${fieldCounter} with data: Name=${name}, Seats=${seats}, Color=${color}`);
+            const template = document.querySelector('.party-row-template');
+            if (!template) { console.error("JS: Template row not found!"); return; }
+            const newRow = template.cloneNode(true);
+            newRow.classList.remove('party-row-template'); newRow.classList.add('party-row'); newRow.style.display = '';
+
+            const partyInput = newRow.querySelector('#party_tpl'); const seatsInput = newRow.querySelector('#seats_tpl'); const colorInput = newRow.querySelector('#color_tpl');
+            const partyLabel = newRow.querySelector('label[for="party_tpl"]'); const seatsLabel = newRow.querySelector('label[for="seats_tpl"]');
+
+            const newPartyId = `party${fieldCounter}`; const newSeatsId = `seats${fieldCounter}`; const newColorId = `color${fieldCounter}`;
+            partyInput.id = newPartyId; partyInput.name = newPartyId; partyLabel.setAttribute('for', newPartyId);
+            seatsInput.id = newSeatsId; seatsInput.name = newSeatsId; seatsLabel.setAttribute('for', newSeatsId);
+            colorInput.id = newColorId; colorInput.name = newColorId; colorInput.title = `Farba strany ${fieldCounter}`;
+
+            partyInput.value = name; seatsInput.value = seats; colorInput.value = color || getRandomColor();
+            partyFieldsArea.appendChild(newRow);
+            // DO NOT call M.updateTextFields() here - call it once after the loop in fetchParties
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("JS: DOM fully loaded");
+            M.FormSelect.init(document.querySelectorAll('select')); // Init select first
+            document.getElementById("party-form").addEventListener("submit", submitForm);
+
+            const dropdown = document.getElementById("source");
+            if (dropdown && dropdown.options.length > 1) {
+                console.log("JS: Initializing - selecting first poll");
+                dropdown.selectedIndex = 1;
+                M.FormSelect.init(dropdown); // Re-initialize after setting index
+                fetchParties();
+            } else {
+                console.warn("JS: Initializing - dropdown empty or not found.");
+                noPartiesMessage.style.display = 'block';
+                addPartyButton.style.display = 'block';
+                submitButton.disabled = true; exclusionsButton.disabled = true;
+            }
+             // Ensure any initial static labels are updated if needed (though we clear the area)
+             // M.updateTextFields(); // Probably not needed here as we clear partyFieldsArea
+        });
+    </script>
 </body>
-
 </html>
