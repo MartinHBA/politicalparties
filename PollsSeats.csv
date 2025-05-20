@@ -1,4 +1,11 @@
 date,agency,name,seat,creditInfoId
+19.05.2025,IPSOS,PS,41,ipsos_mar25
+19.05.2025,IPSOS,SMER-SD,37,ipsos_mar25
+19.05.2025,IPSOS,HLAS-SD,16,ipsos_mar25
+19.05.2025,IPSOS,REPUBLIKA,17,ipsos_mar25
+19.05.2025,IPSOS,KDH,14,ipsos_mar25
+19.05.2025,IPSOS,SaS,12,ipsos_mar25
+19.05.2025,IPSOS,Slovensko(OĽANO),13,ipsos_mar25
 28.04.2025,AKO,PS,40,ako_feb25
 28.04.2025,AKO,SMER-SD,36,ako_feb25
 28.04.2025,AKO,HLAS-SD,21,ako_feb25
@@ -20,14 +27,6 @@ date,agency,name,seat,creditInfoId
 09.04.2025,NMS,KDH,13,nms_mar25
 09.04.2025,NMS,SaS,12,nms_mar25
 09.04.2025,NMS,Slovensko(OĽANO),12,nms_mar25
-16.03.2025,IPSOS,PS,36,ipsos_mar25
-16.03.2025,IPSOS,SMER-SD,38,ipsos_mar25
-16.03.2025,IPSOS,HLAS-SD,21,ipsos_mar25
-16.03.2025,IPSOS,REPUBLIKA,13,ipsos_mar25
-16.03.2025,IPSOS,KDH,13,ipsos_mar25
-16.03.2025,IPSOS,SaS,11,ipsos_mar25
-16.03.2025,IPSOS,Slovensko(OĽANO),10,ipsos_mar25
-16.03.2025,IPSOS,Demokrati,8,ipsos_mar25
 01.10.2023,Voľby NRSR,PS,32,volby_oct23
 01.10.2023,Voľby NRSR,SMER-SD,42,volby_oct23
 01.10.2023,Voľby NRSR,HLAS-SD,27,volby_oct23
