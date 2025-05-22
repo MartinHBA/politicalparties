@@ -1,4 +1,11 @@
 date,agency,name,seat,creditInfoId
+22.05.2025,Focus,PS,39,focus_apr25
+22.05.2025,Focus,SMER-SD,36,focus_apr25
+22.05.2025,Focus,HLAS-SD,20,focus_apr25
+22.05.2025,Focus,REPUBLIKA,15,focus_apr25
+22.05.2025,Focus,KDH,13,focus_apr25
+22.05.2025,Focus,SaS,13,focus_apr25
+22.05.2025,Focus,Slovensko(OĽANO),14,focus_apr25
 19.05.2025,IPSOS,PS,41,ipsos_mar25
 19.05.2025,IPSOS,SMER-SD,37,ipsos_mar25
 19.05.2025,IPSOS,HLAS-SD,16,ipsos_mar25
@@ -13,13 +20,6 @@ date,agency,name,seat,creditInfoId
 28.04.2025,AKO,KDH,13,ako_feb25
 28.04.2025,AKO,SaS,13,ako_feb25
 28.04.2025,AKO,Slovensko(OĽANO),15,ako_feb25
-11.04.2025,Focus,PS,39,focus_apr25
-11.04.2025,Focus,SMER-SD,36,focus_apr25
-11.04.2025,Focus,HLAS-SD,20,focus_apr25
-11.04.2025,Focus,REPUBLIKA,15,focus_apr25
-11.04.2025,Focus,KDH,15,focus_apr25
-11.04.2025,Focus,SaS,12,focus_apr25
-11.04.2025,Focus,Slovensko(OĽANO),13,focus_apr25
 09.04.2025,NMS,PS,43,nms_mar25
 09.04.2025,NMS,SMER-SD,37,nms_mar25
 09.04.2025,NMS,HLAS-SD,16,nms_mar25
