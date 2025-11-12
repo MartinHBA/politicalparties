@@ -46,6 +46,15 @@
         #myChart .chart-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2em; color: #888; text-align: center; }
         #myChart.loading .chart-message::before { content: 'Načítavam graf...'; }
         #myChart .chart-message.error { color: #f44336; }
+        .stack-row { flex-wrap: wrap; }
+        @media (max-width: 600px) {
+            .stack-row { flex-direction: column; align-items: stretch !important; }
+            .stack-row .col { width: 100% !important; margin-top: 8px; }
+            .stack-row .col:first-child { margin-top: 0; }
+            .stack-row .col .btn { width: 100%; }
+            .stack-row .col select { width: 100%; }
+            .exclusion-arrow { justify-content: flex-start !important; margin-top: 0; }
+        }
     </style>
 </head>
 
@@ -62,7 +71,7 @@
             </div>
 
             <!-- Poll Selection & Submit -->
-             <div class="row valign-wrapper">
+             <div class="row valign-wrapper stack-row">
                 <div class="input-field col s12 m6">
                     <select id="source" onchange="fetchPartiesAndUpdateChart()"> <!-- Changed function name -->
                         <option value="" disabled selected>Vyberte prieskum...</option>
@@ -85,10 +94,10 @@
              </div>
 
              <!-- Exclusions -->
-             <div class="row valign-wrapper" style="background-color: #f5f5f5; border-radius: 5px; padding: 10px 0; margin-bottom: 20px;">
-                <div class="col s5" style="display: flex; align-items: center; padding-left: 20px;">Zohľadniť vzájomné vylúčenia strán?</div>
-                <div class="col s1" style="display: flex; align-items: center; justify-content: center;"><i class="material-icons grey-text text-darken-1">arrow_forward</i></div>
-                <div class="col s6"> <button class="btn waves-effect waves-light grey darken-1" type="button" onclick="exclusionsForm(event)" id="define-exclusions-button" disabled>Definovať Vylúčenia</button> </div>
+             <div class="row valign-wrapper stack-row" style="background-color: #f5f5f5; border-radius: 5px; padding: 10px 0; margin-bottom: 20px;">
+                <div class="col s12 m5" style="display: flex; align-items: center; padding-left: 20px;">Zohľadniť vzájomné vylúčenia strán:</div>
+                <div class="col s12 m1" style="display: flex; align-items: center; justify-content: center;"><i class="material-icons grey-text text-darken-1">arrow_forward</i></div>
+                <div class="col s12 m6"> <button class="btn waves-effect waves-light grey darken-1" type="button" onclick="exclusionsForm(event)" id="define-exclusions-button" disabled>Definovať Vylúčenia</button> </div>
             </div>
 
              <!-- Party Form -->
@@ -430,3 +439,5 @@
 
 </body>
 </html>
+
+
