@@ -1,4 +1,20 @@
 date,agency,name,seat,creditInfoId
+19.12.2025,AKO,PS,41,ako_feb25
+19.12.2025,AKO,SMER-SD,30,ako_feb25
+19.12.2025,AKO,HLAS-SD,17,ako_feb25
+19.12.2025,AKO,REPUBLIKA,12,ako_feb25
+19.12.2025,AKO,KDH,12,ako_feb25
+19.12.2025,AKO,SaS,13,ako_feb25
+19.12.2025,AKO,Slovensko(OĽANO),16,ako_feb25
+19.12.2025,AKO,Demokrati,9,ako_feb25
+18.12.2025,Focus,PS,39,focus_apr25
+18.12.2025,Focus,SMER-SD,29,focus_apr25
+18.12.2025,Focus,HLAS-SD,16,focus_apr25
+18.12.2025,Focus,REPUBLIKA,18,focus_apr25
+18.12.2025,Focus,KDH,11,focus_apr25
+18.12.2025,Focus,SaS,12,focus_apr25
+18.12.2025,Focus,Slovensko(OĽANO),16,focus_apr25
+18.12.2025,Focus,Demokrati,9,focus_apr25
 05.12.2025,NMS,PS,40,nms_mar25
 05.12.2025,NMS,SMER-SD,33,nms_mar25
 05.12.2025,NMS,HLAS-SD,12,nms_mar25
@@ -15,22 +31,6 @@ date,agency,name,seat,creditInfoId
 24.10.2025,IPSOS,SaS,13,ipsos_mar25
 24.10.2025,IPSOS,Slovensko(OĽANO),14,ipsos_mar25
 24.10.2025,IPSOS,Demokrati,9,ipsos_mar25
-24.10.2025,AKO,PS,40,ako_feb25
-24.10.2025,AKO,SMER-SD,31,ako_feb25
-24.10.2025,AKO,HLAS-SD,18,ako_feb25
-24.10.2025,AKO,REPUBLIKA,15,ako_feb25
-24.10.2025,AKO,KDH,12,ako_feb25
-24.10.2025,AKO,SaS,12,ako_feb25
-24.10.2025,AKO,Slovensko(OĽANO),13,ako_feb25
-24.10.2025,AKO,Demokrati,9,ako_feb25
-23.10.2025,Focus,PS,40,focus_apr25
-23.10.2025,Focus,SMER-SD,30,focus_apr25
-23.10.2025,Focus,HLAS-SD,16,focus_apr25
-23.10.2025,Focus,REPUBLIKA,17,focus_apr25
-23.10.2025,Focus,KDH,12,focus_apr25
-23.10.2025,Focus,SaS,11,focus_apr25
-23.10.2025,Focus,Slovensko(OĽANO),15,focus_apr25
-23.10.2025,Focus,Demokrati,9,focus_apr25
 01.10.2023,Voľby NRSR,PS,32,volby_oct23
 01.10.2023,Voľby NRSR,SMER-SD,42,volby_oct23
 01.10.2023,Voľby NRSR,HLAS-SD,27,volby_oct23
