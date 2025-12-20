@@ -47,6 +47,12 @@
         #myChart.loading .chart-message::before { content: 'Načítavam graf...'; }
         #myChart .chart-message.error { color: #f44336; }
         .stack-row { flex-wrap: wrap; }
+        .subscribe-card { margin-top: 30px; }
+        .subscribe-form .btn { margin-top: 1.5rem; }
+        .subscribe-honeypot { position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0; }
+        .subscribe-message { margin-top: 10px; font-size: 0.95rem; min-height: 1.2rem; }
+        .subscribe-message.success { color: #2e7d32; }
+        .subscribe-message.error { color: #c62828; }
         @media (max-width: 600px) {
             .stack-row { flex-direction: column; align-items: stretch !important; }
             .stack-row .col { width: 100% !important; margin-top: 8px; }
@@ -114,6 +120,35 @@
                 </div>
             </form>
 
+            <!-- Subscribe Section -->
+            <div class="card subscribe-card">
+                <div class="card-content">
+                    <span class="card-title">Emailové aktualizácie</span>
+                    <p>Pošleme vám email vždy, keď na stránke pribudnú nové prieskumy politických strán.</p>
+                    <form id="subscribe-form" class="subscribe-form">
+                        <div class="row" style="margin-bottom: 0;">
+                            <div class="input-field col s12 m7">
+                                <input type="email" id="subscribe-email" name="email" required>
+                                <label for="subscribe-email">Váš email</label>
+                            </div>
+                            <div class="input-field col s12 m5">
+                                <button class="btn waves-effect waves-light" type="submit" id="subscribe-submit">
+                                    <i class="material-icons left">mail</i>Odoberať novinky
+                                </button>
+                            </div>
+                        </div>
+                        <p>
+                            <label>
+                                <input type="checkbox" id="subscribe-consent">
+                                <span>Súhlasím so zasielaním emailových noviniek o aktualizáciách stránky.</span>
+                            </label>
+                        </p>
+                        <input type="text" id="subscribe-website" name="website" class="subscribe-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+                        <div id="subscribe-message" class="subscribe-message" role="status" aria-live="polite"></div>
+                    </form>
+                </div>
+            </div>
+
         </div> <!-- End container -->
     </main>
 
@@ -137,6 +172,12 @@
         const exclusionsButton = document.getElementById('define-exclusions-button');
         const chartContainer = document.getElementById('myChart');
         const creditDisplayElement = document.getElementById('credit-info-display');
+        const subscribeForm = document.getElementById('subscribe-form');
+        const subscribeEmailInput = document.getElementById('subscribe-email');
+        const subscribeConsentCheckbox = document.getElementById('subscribe-consent');
+        const subscribeMessageElement = document.getElementById('subscribe-message');
+        const subscribeButton = document.getElementById('subscribe-submit');
+        const subscribeHoneypotInput = document.getElementById('subscribe-website');
 
         // --- Helper Functions ---
         function setChartMessage(message, isError = false) {
@@ -163,6 +204,66 @@
             colorInput.id = newColorId; colorInput.name = newColorId; colorInput.title = `Farba strany ${fieldCounter}`;
             partyInput.value = name; seatsInput.value = seats; colorInput.value = color || getRandomColor();
             partyFieldsArea.appendChild(newRow);
+        }
+
+        function setSubscribeMessage(message, isError = false) {
+            if (!subscribeMessageElement) { return; }
+            subscribeMessageElement.textContent = message || '';
+            subscribeMessageElement.classList.remove('error', 'success');
+            if (!message) { return; }
+            subscribeMessageElement.classList.add(isError ? 'error' : 'success');
+        }
+
+        async function handleSubscribeSubmit(event) {
+            event.preventDefault();
+            if (!subscribeEmailInput || !subscribeButton) { return; }
+            const emailValue = subscribeEmailInput.value.trim();
+
+            if (!emailValue) {
+                setSubscribeMessage('Zadajte emailovú adresu.', true);
+                return;
+            }
+            if (!subscribeConsentCheckbox?.checked) {
+                setSubscribeMessage('Potvrďte súhlas so zasielaním emailov.', true);
+                return;
+            }
+
+            setSubscribeMessage('Odosielam žiadosť...', false);
+            subscribeButton.disabled = true;
+            subscribeButton.classList.add('disabled');
+
+            try {
+                const payload = {
+                    email: emailValue,
+                    consent: true,
+                    website: subscribeHoneypotInput?.value || '',
+                };
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data?.error || 'Nepodarilo sa odoslať požiadavku.');
+                }
+                const status = data?.status || '';
+                if (status === 'already_subscribed') {
+                    setSubscribeMessage('Tento email už odber má.', false);
+                } else {
+                    setSubscribeMessage('Ďakujeme! Na email pošleme nové prieskumy.', false);
+                    subscribeForm?.reset();
+                    if (subscribeHoneypotInput) { subscribeHoneypotInput.value = ''; }
+                    M.updateTextFields();
+                }
+            } catch (error) {
+                console.error('JS: Subscribe error:', error);
+                const message = error?.message || 'Nepodarilo sa uložiť odber.';
+                setSubscribeMessage(message, true);
+            } finally {
+                subscribeButton.disabled = false;
+                subscribeButton.classList.remove('disabled');
+            }
         }
 
         // --- Core Logic ---
@@ -420,6 +521,9 @@
             console.log("JS: DOM fully loaded");
             M.FormSelect.init(document.querySelectorAll('select'));
             document.getElementById("party-form").addEventListener("submit", submitForm);
+            if (subscribeForm) {
+                subscribeForm.addEventListener('submit', handleSubscribeSubmit);
+            }
 
             const dropdown = document.getElementById("source");
             if (dropdown && dropdown.options.length > 1) {
